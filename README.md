@@ -20,3 +20,8 @@ La plataforma inicial es la instalación en ambiente LAB de AWS
 Actualiza para versión 10 los talleres de desarrollo.
 
 
+Links 
+
+- https://integrationsuperhero.github.io/techcon2020/
+
+

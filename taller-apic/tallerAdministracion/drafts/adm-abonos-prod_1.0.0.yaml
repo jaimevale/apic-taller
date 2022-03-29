@@ -1,0 +1,32 @@
+info:
+  version: 1.0.0
+  title: ADM-Abonos-jaimev
+  name: adm-abonos-jaimev
+  categories: []
+  contact:
+    name: Transbank S.A.
+    email: contacto@transbank.cl
+  summary: Producto Abonos.
+gateways:
+  - datapower-api-gateway
+plans:
+  default-plan:
+    rate-limits:
+      default:
+        value: 100/1hour
+    title: Plan predeterminado
+    description: Plan predeterminado
+    approval: false
+apis:
+  abonos1.1.0:
+    $ref: adm-abonos-api_1.1.0.yaml
+visibility:
+  view:
+    type: authenticated
+    orgs: []
+    enabled: true
+  subscribe:
+    type: authenticated
+    orgs: []
+    enabled: true
+product: 1.0.0

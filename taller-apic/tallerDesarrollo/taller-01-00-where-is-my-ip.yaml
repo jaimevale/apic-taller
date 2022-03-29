@@ -1,0 +1,165 @@
+swagger: '2.0'
+info:
+  title: Taller-01-00_where-is-my-ip
+  x-ibm-name: taller-01-00-where-is-my-ip
+  version: 1.0.0
+  description: >-
+    Esta es la documentación principal del API
+
+    Se debe escribir lo *necesario* para que el servicio sea *entendido*
+    completamente por los potenciales consumidores
+
+
+    ## Se sigue sintaxis Markdown
+
+    La representación  de esta documentación
+
+    * Sigue markdown
+
+    * Sin  muchas funcionalidades, pero lo suficiente para lograr el objetivo
+schemes:
+  - https
+basePath: /taller-01-00-where-is-my-ip
+produces:
+  - application/json
+consumes:
+  - application/json
+security:
+  - clientID: []
+securityDefinitions:
+  clientID:
+    type: apiKey
+    name: X-IBM-Client-Id
+    in: header
+    x-key-type: client_id
+x-ibm-configuration:
+  properties:
+    target-url:
+      value: 'http://ip-api.com/json/{ip}'
+      description: |-
+        URL of the proxy policy
+        http://ip-api.com/json/{ip}
+        https://9a7ae1f3-194d-4dbd-8d89-83bd72599933.mock.pstmn.io/json/{ip}
+      encoded: false
+  cors:
+    enabled: true
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  assembly:
+    execute:
+      - gatewayscript:
+          version: 2.0.0
+          title: gatewayscript
+          source: >-
+            const apim = require('apim');
+
+            console.error("****************** EN taller01 
+            *************************");
+
+            console.error(`El valor de api.operation.path  es
+            ${apim.getvariable('api.operation.path')} `);
+
+            console.error(`El valor de request.path  es
+            ${apim.getvariable('request.path')} `);
+
+            console.error("El valor de request.parameters  es
+            ",apim.getvariable('request.parameters') );
+
+            console.error(`El valor de request.parameters.ip  es
+            ${apim.getvariable('request.parameters.ip')} `);
+
+            console.error("  >>>>   $(target-url)   ")
+      - invoke:
+          title: invoke
+          version: 2.0.0
+          verb: keep
+          target-url: $(target-url)
+          follow-redirects: false
+          timeout: 60
+          parameter-control:
+            type: blacklist
+          header-control:
+            type: blacklist
+            values:
+              - ^X-IBM-Client-Id$
+          inject-proxy-headers: true
+    catch: []
+  activity-log:
+    enabled: true
+    error-content: header
+    success-content: activity
+  application-authentication:
+    certificate: false
+  catalogs:
+    sandbox:
+      properties:
+        target-url: 'http://ip-api.com/json/{ip}'
+paths:
+  '/{ip}':
+    get:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: ip
+          in: path
+          required: true
+          type: string
+  /:
+    put:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+    post:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+    delete:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+    options:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+    head:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+    patch:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []

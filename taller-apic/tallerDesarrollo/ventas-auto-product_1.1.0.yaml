@@ -1,0 +1,30 @@
+info:
+  title: Ventas auto product
+  name: ventas-auto-product
+  version: 1.1.0
+apis:
+  Ventas:
+    $ref: .\ventas_1.1.0.yaml
+gateways:
+  - datapower-api-gateway
+visibility:
+  view:
+    enabled: true
+    type: public
+    tags: []
+    orgs: []
+  subscribe:
+    enabled: true
+    type: authenticated
+    tags: []
+    orgs: []
+plans:
+  default:
+    title: Default Plan
+    description: Default Plan
+    approval: false
+    rate-limits:
+      default:
+        value: 100/hour
+        hard-limit: false
+product: 1.0.0

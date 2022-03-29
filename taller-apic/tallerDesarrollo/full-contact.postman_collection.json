@@ -1,0 +1,92 @@
+{
+	"info": {
+		"_postman_id": "dd19985f-2eff-4c57-8cbe-4a78b7800586",
+		"name": "full-contact",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "https://api.fullcontact.com/v3/company.enrich",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer 7gfNF2FJPtoVC3rFP2pWX1nrLWzgY0Zx",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"domain\": \"vc-soft.com\"\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.fullcontact.com/v3/company.enrich",
+					"protocol": "https",
+					"host": [
+						"api",
+						"fullcontact",
+						"com"
+					],
+					"path": [
+						"v3",
+						"company.enrich"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "https://api.fullcontact.com/v3/person.enrich",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer 7gfNF2FJPtoVC3rFP2pWX1nrLWzgY0Zx",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\": \"jaimev@vc-soft.com\"\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.fullcontact.com/v3/person.enrich",
+					"protocol": "https",
+					"host": [
+						"api",
+						"fullcontact",
+						"com"
+					],
+					"path": [
+						"v3",
+						"person.enrich"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

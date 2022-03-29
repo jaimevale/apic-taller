@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="0018f628-1f40-44e2-8e88-cd646a68a333" activeEnvironment="Default" name="consultaComercioPorRutSOAP" resourceRoot="" soapui-version="5.5.0" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" id="3724a9be-dc9e-4304-934d-f5a05da6cd66" wsaVersion="NONE" name="consultaComercioPorRutSOAP" type="wsdl" bindingName="{http://www.example.org/consultaComercioPorRut/}consultaComercioPorRutSOAP" soapVersion="1_1" anonymous="optional" definition="file:/C:/Users/mtorres/Desktop/Microcks/Mocks/jaimev/taller-apic/tallerDesarrollo/wsdl/consultaComercioPorRut.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/C:/Users/mtorres/Desktop/Microcks/Mocks/jaimev/taller-apic/tallerDesarrollo/wsdl/consultaComercioPorRut.wsdl"><con:part><con:url>file:/C:/Users/mtorres/Desktop/Microcks/Mocks/jaimev/taller-apic/tallerDesarrollo/wsdl/consultaComercioPorRut.wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="consultaComercioPorRut" targetNamespace="http://www.example.org/consultaComercioPorRut/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.example.org/consultaComercioPorRut/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://www.example.org/consultaComercioPorRut/">
+      <xsd:element name="consultaPorRutRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="rut" type="xsd:string"/>
+            <xsd:element name="dv" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="consultaPorRutResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="estado" type="xsd:string"/>
+            <xsd:element name="fechaValidezContrato" type="xsd:string"/>
+            <xsd:element name="dominio" type="xsd:string"/>
+            <xsd:element name="cuentas" type="tns:CuentasType"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:complexType name="CuentasType">
+        <xsd:sequence>
+          <xsd:element name="cuentaNumero" type="xsd:string"/>
+          <xsd:element name="cuentaBanco" type="xsd:string"/>
+          <xsd:element name="cuentaRol" type="xsd:string"/>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="consultaPorRutRequest">
+    <wsdl:part element="tns:consultaPorRutRequest" name="consultaPorRutRequest"/>
+  </wsdl:message>
+  <wsdl:message name="consultaPorRutResponse">
+    <wsdl:part element="tns:consultaPorRutResponse" name="consultaPorRutResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="consultaComercioPorRut">
+    <wsdl:operation name="consultaPorRut">
+      <wsdl:input message="tns:consultaPorRutRequest" name="consultaPorRutRequest"/>
+      <wsdl:output message="tns:consultaPorRutResponse" name="consultaPorRutResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="consultaComercioPorRutSOAP" type="tns:consultaComercioPorRut">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="consultaPorRut">
+      <soap:operation soapAction="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut"/>
+      <wsdl:input name="consultaPorRutRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="consultaPorRutResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="consultaComercioPorRut">
+    <wsdl:port binding="tns:consultaComercioPorRutSOAP" name="consultaComercioPorRutSOAP">
+      <soap:address location="https://microcks.vc-soft.com:8080/soap/consultaComercioPorRutSOAP/1.0.0"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>https://microcks.vc-soft.com:8080/soap/consultaComercioPorRutSOAP+Mock/0.0.6</con:endpoint><con:endpoint>https://microcks.vc-soft.com:8080/soap/consultaComercioPorRutSOAP+Mock/0.4</con:endpoint><con:endpoint>https://microcks.vc-soft.com:8080/soap/consultaComercioPorRutSOAP+Mock/1.0.5</con:endpoint><con:endpoint>https://microcks.vc-soft.com:8080/soap/consultaComercioPorRutSOAP/1.0.0</con:endpoint></con:endpoints><con:operation id="18d5cbb9-10e6-4842-a430-997d0a17e87c" isOneWay="false" action="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut" name="consultaPorRut" bindingOperationName="consultaPorRut" type="Request-Response" outputName="consultaPorRutResponse" inputName="consultaPorRutRequest" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="37041033-da01-4d00-81d1-00c0f65092ad" name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;entry key="stage" value="Activo2" xmlns="http://eviware.com/soapui/config"/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>https://microcks.vc-soft.com:8080/soap/consultaComercioPorRutSOAP+Mock/0.4</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:con="http://www.example.org/consultaComercioPorRut/">\r
+   <soapenv:Header/>\r
+   <soapenv:Body>\r
+      <con:consultaPorRutRequest>\r
+         <rut>12345678</rut>\r
+         <dv>1</dv>\r
+      </con:consultaPorRutRequest>\r
+   </soapenv:Body>\r
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut"/><con:wsrmConfig version="1.2"/></con:call><con:call id="34865e09-5656-4f80-8643-f16b7ae7f9e1" name="Request 2"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://microcks.vc-soft.com:8080/soap/consultaComercioPorRutSOAP/1.0.0</con:endpoint><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut"/></con:call><con:call id="d1cb393c-5232-45e1-9f94-6cef7a16578c" name="RequestSimple"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>https://microcks.vc-soft.com:8080/soap/consultaComercioPorRutSOAP/1.0.0</con:endpoint><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut"/></con:call></con:operation></con:interface><con:testSuite id="2f928f5f-d375-47a0-944e-ea28926f509d" name="consultaComercioPorRutSOAP TestSuite"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase id="c1910a3e-f27c-40f6-9921-a50fdcb44ff1" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="consultaPorRut TestCase" searchProperties="true"><con:settings/><con:testStep type="request" id="00945c1d-637d-444e-9ffc-9d82056c21bd" name="Activo1 Request"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>consultaComercioPorRutSOAP</con:interface><con:operation>consultaPorRut</con:operation><con:request name="Activo1 Request" id="4a1a9a56-13ba-492d-812a-1d1be0b573e0"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;entry key="stage" value="Activo1" xmlns="http://eviware.com/soapui/config"/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://VCSOFTSOA:8080/</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:con="http://www.example.org/consultaComercioPorRut/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <con:consultaPorRut>
+         <rut>12345678</rut>
+         <dv>2</dv>
+      </con:consultaPorRut>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="2ab6cca8-8ebc-470a-a940-3e0cad4ffe01" name="SOAP Response"/><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig action="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut" mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:testStep type="request" id="74c1e6e3-1018-4d79-bb25-3da34a116c1a" name="Activo2 Request"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>consultaComercioPorRutSOAP</con:interface><con:operation>consultaPorRut</con:operation><con:request name="Activo2 Request" id="5d8f264f-21cf-49a3-a6a2-f5e420286b5f"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;entry key="stage" value="Activo2" xmlns="http://eviware.com/soapui/config"/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://VCSOFTSOA:8080/</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:con="http://www.example.org/consultaComercioPorRut/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <con:consultaPorRut>
+         <rut>12345678</rut>
+         <dv>2</dv>
+      </con:consultaPorRut>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="6a86bcbc-1e8d-4ef7-a16c-caeb6862a4b1" name="SOAP Response"/><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig action="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut" mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:testStep type="request" id="6519860e-a1ce-45e1-a43b-7c8e77a3049f" name="Inactivo1 Request"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>consultaComercioPorRutSOAP</con:interface><con:operation>consultaPorRut</con:operation><con:request name="Inactivo1 Request" id="adec0236-3917-4b6b-aab3-d6f9fcba0725"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;entry key="stage" value="Inactivo1" xmlns="http://eviware.com/soapui/config"/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://VCSOFTSOA:8080/</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:con="http://www.example.org/consultaComercioPorRut/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <con:consultaPorRut>
+         <rut>12345678</rut>
+         <dv>2</dv>
+      </con:consultaPorRut>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="e9e1f086-fdeb-4b57-9a2f-b880009387b2" name="SOAP Response"/><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig action="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut" mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:properties/></con:testSuite><con:mockService id="adf7f5c3-32f1-456f-a197-331dfcf0fe36" port="8080" path="/" host="VCSOFTSOA" name="consultaComercioPorRutSOAP Mock"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-action">false</con:setting></con:settings><con:properties><con:property><con:name>version</con:name><con:value>0.0.6</con:value></con:property></con:properties><con:mockOperation name="consultaPorRut" id="498e17c8-c1e9-4489-982b-6363cd5c536a" interface="consultaComercioPorRutSOAP" operation="consultaPorRut"><con:settings/><con:defaultResponse>Activo2 Response</con:defaultResponse><con:dispatchStyle>SCRIPT</con:dispatchStyle><con:dispatchPath>String[] responses = ["Activo1 Response", "Activo2 Response", "Inactivo1 Response"]
+def rn = (int)((Math.random())*responses.size())
+printl "valor de rn "
+printl rn
+return responses[rn]​</con:dispatchPath><con:response name="Activo1 Response" id="471316b7-f7c9-4ad2-bd26-9de98cc6592b" httpResponseStatus="200" encoding="UTF-8"><con:settings/><con:responseContent><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:con="http://www.example.org/consultaComercioPorRut/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <con:consultaPorRutResponse>
+         <estado>activo</estado>
+         <fechaValidezContrato>2021-06-01</fechaValidezContrato>
+         <dominio>vc-soft.com</dominio>
+         <cuentas>
+            <cuentaNumero>12345656789</cuentaNumero>
+            <cuentaBanco>32-36789134141</cuentaBanco>
+            <cuentaRol>abonos</cuentaRol>
+         </cuentas>
+      </con:consultaPorRutResponse>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut"/></con:response><con:response name="Activo2 Response" id="d279249d-d137-4f35-a635-159851d1731a" httpResponseStatus="200" encoding="UTF-8"><con:settings/><con:responseContent><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:con="http://www.example.org/consultaComercioPorRut/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <con:consultaPorRutResponse>
+         <estado>activo</estado>
+         <fechaValidezContrato>2021-06-01</fechaValidezContrato>
+         <dominio>falabella.com</dominio>
+         <cuentas>
+            <cuentaNumero>12345656789</cuentaNumero>
+            <cuentaBanco>32-36789134141</cuentaBanco>
+            <cuentaRol>abonos</cuentaRol>
+         </cuentas>
+      </con:consultaPorRutResponse>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut"/></con:response><con:response name="Inactivo1 Response" id="188e7b67-8de6-4602-81c6-75ed1fad1d55" httpResponseStatus="200" encoding="UTF-8"><con:settings/><con:responseContent><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:con="http://www.example.org/consultaComercioPorRut/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <con:consultaPorRutResponse>
+         <estado>inactivo</estado>
+         <fechaValidezContrato>2019-08-31</fechaValidezContrato>
+         <dominio>cnn.cl</dominio>
+         <cuentas>
+            <cuentaNumero>23456756789</cuentaNumero>
+            <cuentaBanco>12-234567890890</cuentaBanco>
+            <cuentaRol>retirado</cuentaRol>
+         </cuentas>
+      </con:consultaPorRutResponse>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut"/></con:response><con:dispatchConfig/></con:mockOperation></con:mockService><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/></con:soapui-project>

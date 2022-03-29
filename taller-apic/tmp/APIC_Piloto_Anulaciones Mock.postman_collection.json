@@ -1,0 +1,296 @@
+{
+	"info": {
+		"_postman_id": "ca378b85-1b74-4d38-a55e-eb03fe848736",
+		"name": "APIC_Piloto_Anulaciones Mock",
+		"description": "version=1.0.5 - Mock Servicio que premite obtener informacion de solicitudes de anulacion.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "anulaciones",
+			"item": [
+				{
+					"name": "ingresarSolicitudes",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rut\": \"<string>\",\n    \"loginUsuario\": \"<string>\",\n    \"veTarjeta\": \"<boolean>\",\n    \"listaSolicitudes\": [\n        {\n            \"codigoComercio\": \"<string>\",\n            \"fechaVenta\": \"<date>\",\n            \"montoVenta\": \"<double>\",\n            \"codigoAutorizacion\": \"<string>\",\n            \"tipoVenta\": \"<string>\",\n            \"montoAnulacion\": \"<double>\",\n            \"moneda\": \"<string>\",\n            \"numeroTarjeta\": \"<string>\",\n            \"ordenPedido\": \"<string>\",\n            \"idServicio\": \"<string>\"\n        },\n        {\n            \"codigoComercio\": \"<string>\",\n            \"fechaVenta\": \"<date>\",\n            \"montoVenta\": \"<double>\",\n            \"codigoAutorizacion\": \"<string>\",\n            \"tipoVenta\": \"<string>\",\n            \"montoAnulacion\": \"<double>\",\n            \"moneda\": \"<string>\",\n            \"numeroTarjeta\": \"<string>\",\n            \"ordenPedido\": \"<string>\",\n            \"idServicio\": \"<string>\"\n        }\n    ],\n    \"listaSolicitudesPorId\": [\n        {\n            \"lninsec\": \"<string>\",\n            \"montoAnulacion\": \"<double>\",\n            \"moneda\": \"<string>\"\n        },\n        {\n            \"lninsec\": \"<string>\",\n            \"montoAnulacion\": \"<double>\",\n            \"moneda\": \"<string>\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "/anulaciones"
+					},
+					"response": [
+						{
+							"name": "Dynamic Request",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"rut\": \"<string>\",\n    \"loginUsuario\": \"<string>\",\n    \"veTarjeta\": \"<boolean>\",\n    \"listaSolicitudes\": [\n        {\n            \"codigoComercio\": \"<string>\",\n            \"fechaVenta\": \"<date>\",\n            \"montoVenta\": \"<double>\",\n            \"codigoAutorizacion\": \"<string>\",\n            \"tipoVenta\": \"<string>\",\n            \"montoAnulacion\": \"<double>\",\n            \"moneda\": \"<string>\",\n            \"numeroTarjeta\": \"<string>\",\n            \"ordenPedido\": \"<string>\",\n            \"idServicio\": \"<string>\"\n        },\n        {\n            \"codigoComercio\": \"<string>\",\n            \"fechaVenta\": \"<date>\",\n            \"montoVenta\": \"<double>\",\n            \"codigoAutorizacion\": \"<string>\",\n            \"tipoVenta\": \"<string>\",\n            \"montoAnulacion\": \"<double>\",\n            \"moneda\": \"<string>\",\n            \"numeroTarjeta\": \"<string>\",\n            \"ordenPedido\": \"<string>\",\n            \"idServicio\": \"<string>\"\n        }\n    ],\n    \"listaSolicitudesPorId\": [\n        {\n            \"lninsec\": \"<string>\",\n            \"montoAnulacion\": \"<double>\",\n            \"moneda\": \"<string>\"\n        },\n        {\n            \"lninsec\": \"<string>\",\n            \"montoAnulacion\": \"<double>\",\n            \"moneda\": \"<string>\"\n        }\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "/anulaciones"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"resultado\": {\n        \"codigoRespuesta\": 0\n    },\n    \"montoTotalCLP\": \"{{ randomInt(100,1000) }}\",\n    \"montoTotalUSD\": \"{{ randomInt(10,100) }}.72\",\n    \"numeroTicket\": \"AN0000{{ randomInt(1000,9999) }}\",\n    \"totalFilasOK\": 3,\n    \"totalFilasNOK\": 0,\n    \"solicitudAnulacionResponse\": {\n        \"solicitudAnulacion\": [\n            {\n                \"codigoComercio\": \"00000000\",\n                \"nombreFantasia\": \"Comercio XXXXX\",\n                \"fechaVenta\": \"2019-06-20\",\n                \"moneda\": \"CLP\",\n                \"montoVenta\": \"{{ randomInt(10000,100000) }}\",\n                \"montoAnulacion\": \"{{ randomInt(1,1000) }}\",\n                \"numeroTarjeta\": \"XXX{{ randomInt(1000,9999) }}\",\n                \"saldo\": \"{{ randomInt(1000,10000) }}\",\n                \"lninsec\": \"000000000000000035{{ randomInt(10000,99999) }}\",\n                \"tipoVenta\": \"1\",\n                \"resultadoValidacion\": \"OK\"\n            },\n            {\n                \"codigoComercio\": \"00000000\",\n                \"nombreFantasia\": \"Comercio XXXXX\",\n                \"fechaVenta\": \"2019-06-19\",\n                \"moneda\": \"CLP\",\n                \"montoVenta\": \"{{ randomInt(10000,100000) }}\",\n                \"montoAnulacion\": \"{{ randomInt(1,1000) }}\",\n                \"numeroTarjeta\": \"XXX{{ randomInt(1000,9999) }}\",\n                \"saldo\": \"{{ randomInt(1000,10000) }}\",\n                \"lninsec\": \"000000000000000035{{ randomInt(10000,99999) }}\",\n                \"tipoVenta\": \"1\",\n                \"resultadoValidacion\": \"OK\"\n            },\n            {\n                \"codigoComercio\": \"00000000\",\n                \"nombreFantasia\": \"Comercio XXXXX\",\n                \"fechaVenta\": \"2019-06-19\",\n                \"moneda\": \"USD\",\n                \"montoVenta\": \"{{ randomInt(100,1000) }}.8\",\n                \"montoAnulacion\": \"{{ randomInt(1,10) }}.06\",\n                \"numeroTarjeta\": \"XXX{{ randomInt(1000,9999) }}\",\n                \"saldo\": \"{{ randomInt(10,100) }}.47\",\n                \"lninsec\": \"000000000000000035{{ randomInt(10000,99999) }}\",\n                \"tipoVenta\": \"1\",\n                \"resultadoValidacion\": \"OK\"\n            }\n        ]\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "/anulaciones?numeroTicket={{ticket}}&fechaInicio={{fechainicio}}&fechaFin={{fechafin}}&loginUsuario={{user}}&rutEmpresa={{rut}}",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "/anulaciones/TT/?numeroTicket={{ticket}}&fechaInicio={{fechainicio}}&fechaFin={{fechafin}}&loginUsuario={{user}}&rutEmpresa={{rut}}",
+							"path": [
+								"anulaciones",
+								"TT",
+								""
+							],
+							"query": [
+								{
+									"key": "numeroTicket",
+									"value": "{{ticket}}"
+								},
+								{
+									"key": "fechaInicio",
+									"value": "{{fechainicio}}"
+								},
+								{
+									"key": "fechaFin",
+									"value": "{{fechafin}}"
+								},
+								{
+									"key": "loginUsuario",
+									"value": "{{user}}"
+								},
+								{
+									"key": "rutEmpresa",
+									"value": "{{rut}}"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Dynamic Request",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "/anulaciones?numeroTicket=<string>&fechaInicio=<date>&fechaFin=<date>&loginUsuario=<string>&rutEmpresa=<string>",
+									"path": [
+										"anulaciones"
+									],
+									"query": [
+										{
+											"key": "numeroTicket",
+											"value": "<string>"
+										},
+										{
+											"key": "fechaInicio",
+											"value": "<date>"
+										},
+										{
+											"key": "fechaFin",
+											"value": "<date>"
+										},
+										{
+											"key": "loginUsuario",
+											"value": "<string>"
+										},
+										{
+											"key": "rutEmpresa",
+											"value": "<string>"
+										}
+									]
+								}
+							},
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								}
+							],
+							"cookie": [],
+							"body": "{\r\n    \"resultado\": {\r\n        \"codigoRespuesta\": 0\r\n    },\r\n    \"totalRegistros\": 7,\r\n    \"solicitudAnulacionResponse\": {\r\n        \"listaSolicitudAnulacion\": [\r\n            {\r\n                \"loginUsuario\": \"XXXX_YY\",\r\n                \"estado\": \"Finalizado\",\r\n                \"fechaSolicitud\": \"2020-05-25\",\r\n                \"numeroTicket\": \"AN0000{{ randomInt(1000,9999) }}\",\r\n                \"montoTotalDolares\": \"{{ randomInt(1,10000) }}.15\",\r\n                \"montoTotalPesos\": 0\r\n            },\r\n            {\r\n                \"loginUsuario\": \"XXXX_YY\",\r\n                \"estado\": \"Finalizado\",\r\n                \"fechaSolicitud\": \"2020-05-25\",\r\n                \"numeroTicket\": \"AN0000{{ randomInt(1000,9999) }}\",\r\n                \"montoTotalDolares\": 0,\r\n                \"montoTotalPesos\": \"{{ randomInt(1,100000) }}\"\r\n            },\r\n            {\r\n                \"loginUsuario\": \"XXXX_YY\",\r\n                \"estado\": \"Finalizado\",\r\n                \"fechaSolicitud\": \"2020-05-25\",\r\n                \"numeroTicket\": \"AN0000{{ randomInt(1000,9999) }}\",\r\n                \"montoTotalDolares\": \"{{ randomInt(1,10000) }}.15\",\r\n                \"montoTotalPesos\": 0\r\n            },\r\n            {\r\n                \"loginUsuario\": \"XXXX_YY\",\r\n                \"estado\": \"Finalizado\",\r\n                \"fechaSolicitud\": \"2020-05-24\",\r\n                \"numeroTicket\": \"AN0000{{ randomInt(1000,9999) }}\",\r\n                \"montoTotalDolares\": \"{{ randomInt(1,10000) }}.15\",\r\n                \"montoTotalPesos\": 0\r\n            },\r\n            {\r\n                \"loginUsuario\": \"XXXX_YY\",\r\n                \"estado\": \"Finalizado\",\r\n                \"fechaSolicitud\": \"2020-05-24\",\r\n                \"numeroTicket\": \"AN0000{{ randomInt(1000,9999) }}\",\r\n                \"montoTotalDolares\": \"{{ randomInt(1,10000) }}.15\",\r\n                \"montoTotalPesos\": 0\r\n            },\r\n            {\r\n                \"loginUsuario\": \"XXXX_YY\",\r\n                \"estado\": \"Finalizado\",\r\n                \"fechaSolicitud\": \"2020-05-23\",\r\n                \"numeroTicket\": \"AN0000{{ randomInt(1000,9999) }}\",\r\n                \"montoTotalDolares\": 0,\r\n                \"montoTotalPesos\": \"{{ randomInt(1,100000) }}\"\r\n            },\r\n            {\r\n                \"loginUsuario\": \"XXXX_YY\",\r\n                \"estado\": \"Finalizado\",\r\n                \"fechaSolicitud\": \"2020-05-23\",\r\n                \"numeroTicket\": \"AN0000{{ randomInt(1000,9999) }}\",\r\n                \"montoTotalDolares\": 0,\r\n                \"montoTotalPesos\": \"{{ randomInt(1,100000) }}\"\r\n            }\r\n        ]\r\n    }\r\n}"
+						}
+					]
+				},
+				{
+					"name": "/anulaciones/:numeroTicket?veTarjeta={{veTarjeta}}&rutEmpresa={{rutTarjeta}}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ca0feb2c-0370-44e4-8d2b-6f5f94dc2948",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "7faa6f03-9f84-4061-bf3c-06d1360c37b4",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "/anulaciones/:numeroTicket?veTarjeta={{veTarjeta}}&rutEmpresa={{rutTarjeta}}",
+							"path": [
+								"anulaciones",
+								":numeroTicket"
+							],
+							"query": [
+								{
+									"key": "veTarjeta",
+									"value": "{{veTarjeta}}"
+								},
+								{
+									"key": "rutEmpresa",
+									"value": "{{rutTarjeta}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "numeroTicket",
+									"value": "AN123456",
+									"type": "text",
+									"enabled": true
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "AN",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "/anulaciones/:numeroTicket",
+									"path": [
+										"anulaciones",
+										":numeroTicket"
+									],
+									"variable": [
+										{
+											"key": "numeroTicket",
+											"value": ""
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								}
+							],
+							"cookie": [],
+							"body": "{\r\n    \"resultado\": {\r\n        \"codigoRespuesta\": 0,\r\n         \"version\": \"1.0.6\"\r\n    },\r\n    \"totalRegistros\": 3,\r\n    \"detalleSolicitudAnulacionResponse\": {\r\n        \"listaVentas\": [\r\n            {\r\n                \"codigoComercio\": \"sin valore en ticket\",\r\n                \"numeroTarjeta\": \"XXX{{ randomInt(1000,9999) }}\",\r\n                \"montoVenta\": \"{{ randomInt(10000,100000) }}\",\r\n                \"moneda\": \"CLP\",\r\n                \"codigoAutorizacion\": \"{{ randomInt(35642,99999) }}\",\r\n                \"fechaVenta\": \"2019-06-20\",\r\n                \"nombreFantasia\": \"Comercio XXXXX\",\r\n                \"montoAnulacion\": \"{{ randomInt(1,1000) }}\",\r\n                \"tipoAnulacion\": \"Parcial\"\r\n            },\r\n            {\r\n                \"codigoComercio\": \"00000000\",\r\n                \"numeroTarjeta\": \"XXX{{ randomInt(1000,9999) }}\",\r\n                \"montoVenta\": \"{{ randomInt(10000,100000) }}\",\r\n                \"moneda\": \"CLP\",\r\n                \"codigoAutorizacion\": \"{{ randomInt(35642,99999) }}\",\r\n                \"fechaVenta\": \"2019-06-20\",\r\n                \"nombreFantasia\": \"Comercio XXXXX\",\r\n                \"montoAnulacion\": \"{{ randomInt(1,1000) }}\",\r\n                \"tipoAnulacion\": \"Parcial\"\r\n            },\r\n            {\r\n                \"codigoComercio\": \"00000000\",\r\n                \"numeroTarjeta\": \"XXX{{ randomInt(1000,9999) }}\",\r\n                \"montoVenta\": \"{{ randomInt(100,1000) }}.89\",\r\n                \"moneda\": \"USD\",\r\n                \"codigoAutorizacion\": \"{{ randomInt(35642,99999) }}\",\r\n                \"fechaVenta\": \"2020-03-20\",\r\n                \"nombreFantasia\": \"Comercio XXXXX\",\r\n                \"montoAnulacion\": \"{{ randomInt(10,100) }}.1\",\r\n                \"tipoAnulacion\": \"Parcial\"\r\n            }\r\n        ]\r\n    }\r\n}"
+						},
+						{
+							"name": "AN123456",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "/anulaciones/:numeroTicket",
+									"path": [
+										"anulaciones",
+										":numeroTicket"
+									],
+									"variable": [
+										{
+											"key": "numeroTicket",
+											"value": "AN123456",
+											"description": "parametro path"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json",
+									"description": "",
+									"type": "text"
+								}
+							],
+							"cookie": [],
+							"body": "{\r\n    \"resultado\": {\r\n        \"codigoRespuesta\": 0,\r\n        \"version\": \"1.0.6\"\r\n    },\r\n    \"totalRegistros\": 3,\r\n    \"detalleSolicitudAnulacionResponse\": {\r\n        \"listaVentas\": [\r\n            {\r\n                \"codigoComercio\": \"con valor en ticket AN123456\",\r\n                \"numeroTarjeta\": \"XXX{{ randomInt(1000,9999) }}\",\r\n                \"montoVenta\": \"{{ randomInt(10000,100000) }}\",\r\n                \"moneda\": \"CLP\",\r\n                \"codigoAutorizacion\": \"{{ randomInt(35642,99999) }}\",\r\n                \"fechaVenta\": \"2019-06-20\",\r\n                \"nombreFantasia\": \"Comercio XXXXX\",\r\n                \"montoAnulacion\": \"{{ randomInt(1,1000) }}\",\r\n                \"tipoAnulacion\": \"Parcial\"\r\n            },\r\n            {\r\n                \"codigoComercio\": \"00000000\",\r\n                \"numeroTarjeta\": \"XXX{{ randomInt(1000,9999) }}\",\r\n                \"montoVenta\": \"{{ randomInt(10000,100000) }}\",\r\n                \"moneda\": \"CLP\",\r\n                \"codigoAutorizacion\": \"{{ randomInt(35642,99999) }}\",\r\n                \"fechaVenta\": \"2019-06-20\",\r\n                \"nombreFantasia\": \"Comercio XXXXX\",\r\n                \"montoAnulacion\": \"{{ randomInt(1,1000) }}\",\r\n                \"tipoAnulacion\": \"Parcial\"\r\n            },\r\n            {\r\n                \"codigoComercio\": \"00000000\",\r\n                \"numeroTarjeta\": \"XXX{{ randomInt(1000,9999) }}\",\r\n                \"montoVenta\": \"{{ randomInt(100,1000) }}.89\",\r\n                \"moneda\": \"USD\",\r\n                \"codigoAutorizacion\": \"{{ randomInt(35642,99999) }}\",\r\n                \"fechaVenta\": \"2020-03-20\",\r\n                \"nombreFantasia\": \"Comercio XXXXX\",\r\n                \"montoAnulacion\": \"{{ randomInt(10,100) }}.1\",\r\n                \"tipoAnulacion\": \"Parcial\"\r\n            }\r\n        ]\r\n    }\r\n}"
+						}
+					]
+				}
+			],
+			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "a5c8dd84-9275-4148-8686-e8fa45493f4b",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "76b00d24-1c6a-49ed-9ba0-5ea11be396b3",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}

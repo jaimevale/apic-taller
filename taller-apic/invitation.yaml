@@ -1,0 +1,25 @@
+type: notification_template
+api_version: 2.0.0
+id: a4bac912-d6cd-4675-b9dd-97b279573748
+name: invitation
+title: invitation
+notification_template_type: provider
+scope: cloud
+variables:
+  - activationLink
+  - expiresAt
+subject: Invitation to create an API provider organization in IBM API Connect
+body: |
+  Hello,
+
+  The account administrator for IBM API Connect has invited you to create
+  an API provider organization. A provider organization allows you and your
+  team to develop APIs and manage catalogs of API products.
+
+  To continue, please use the link below:
+
+  {{{activationLink}}}
+created_at: '2019-12-27T21:32:40.245Z'
+updated_at: '2019-12-27T21:32:40.245Z'
+url: >-
+  https://cloud.apic.dev1.tbk.cl/api/cloud/settings/notification-templates/provider/a4bac912-d6cd-4675-b9dd-97b279573748

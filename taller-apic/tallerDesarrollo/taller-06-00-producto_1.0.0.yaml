@@ -1,0 +1,56 @@
+info:
+  version: 1.0.0
+  title: Taller-06-00-Producto
+  name: taller-06-00-producto
+  description: producto taller 06
+gateways:
+  - datapower-api-gateway
+plans:
+  contratoa:
+    rate-limits:
+      default:
+        value: 30/1minute
+    title: ContratoA
+    description: Contrato A
+    approval: false
+    name: contratoa
+  default-plan:
+    title: Default Plan
+    name: default-plan
+    description: Default Plan
+    approval: false
+    rate-limits:
+      default:
+        value: 3/1minute
+        hard-limit: false
+    burst-limits:
+      default:
+        value: 3/1minute
+    apis:
+      taller-03-00-info-publica2.0.0:
+        operations:
+          - path: /comercio
+            operation: get
+          - path: /usuario
+            operation: get
+            rate-limits:
+              usuario:
+                hard-limit: false
+                value: 1/1minute
+      taller-05-abonosbase0.2.0:
+        operations: []
+apis:
+  taller-03-00-info-publica2.0.0:
+    $ref: .\taller-03-00-info-publica.yaml
+  taller-05-abonosbase0.2.0:
+    $ref: .\wsdl\AbonosBase.yaml
+visibility:
+  view:
+    type: public
+    orgs: []
+    enabled: true
+  subscribe:
+    type: authenticated
+    orgs: []
+    enabled: true
+product: 1.0.0

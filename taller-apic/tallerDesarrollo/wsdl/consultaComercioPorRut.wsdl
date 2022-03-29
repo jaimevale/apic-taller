@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" name="consultaComercioPorRut" targetNamespace="http://www.example.org/consultaComercioPorRut/" 
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+  xmlns:tns="http://www.example.org/consultaComercioPorRut/" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://www.example.org/consultaComercioPorRut/">
+      <xsd:element name="consultaPorRutRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="rut" type="xsd:string" />
+            <xsd:element name="dv" type="xsd:string"></xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="consultaPorRutResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="estado" type="xsd:string" />
+            <xsd:element name="fechaValidezContrato" type="xsd:string"></xsd:element>
+            <xsd:element name="dominio" type="xsd:string"></xsd:element>
+            <xsd:element name="cuentas" type="tns:CuentasType"></xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:complexType name="CuentasType">
+        <xsd:sequence>
+          <xsd:element name="cuentaNumero" type="xsd:string"></xsd:element>
+          <xsd:element name="cuentaBanco" type="xsd:string"></xsd:element>
+          <xsd:element name="cuentaRol" type="xsd:string"></xsd:element>
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="consultaPorRutRequest">
+    <wsdl:part element="tns:consultaPorRutRequest" name="consultaPorRutRequest" />
+  </wsdl:message>
+  <wsdl:message name="consultaPorRutResponse">
+    <wsdl:part element="tns:consultaPorRutResponse" name="consultaPorRutResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="consultaComercioPorRut">
+    <wsdl:operation name="consultaPorRut">
+      <wsdl:input message="tns:consultaPorRutRequest" name="consultaPorRutRequest"/>
+      <wsdl:output message="tns:consultaPorRutResponse" name="consultaPorRutResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="consultaComercioPorRutSOAP" type="tns:consultaComercioPorRut">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="consultaPorRut">
+      <soap:operation soapAction="http://microcks.vc-soft.com/consultaComercioPorRut/consultaPorRut" />
+      <wsdl:input name="consultaPorRutRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="consultaPorRutResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="consultaComercioPorRut">
+    <wsdl:port binding="tns:consultaComercioPorRutSOAP" name="consultaComercioPorRutSOAP">
+      <soap:address location="https://microcks.vc-soft.com:8080/soap/consultaComercioPorRutSOAP/1.0.0"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

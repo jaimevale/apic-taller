@@ -1,0 +1,30 @@
+info:
+  title: Taller-05-AbonosBase auto product
+  name: taller-05-abonosbase-auto-product
+  version: 0.2.0
+apis:
+  Taller-05-AbonosBase:
+    $ref: .\wsdl\AbonosBase.yaml
+gateways:
+  - datapower-api-gateway
+visibility:
+  view:
+    enabled: true
+    type: public
+    tags: []
+    orgs: []
+  subscribe:
+    enabled: true
+    type: authenticated
+    tags: []
+    orgs: []
+plans:
+  default:
+    title: Default Plan
+    description: Default Plan
+    approval: false
+    rate-limits:
+      default:
+        value: 100/hour
+        hard-limit: false
+product: 1.0.0

@@ -1,0 +1,1272 @@
+swagger: '2.0'
+info:
+  title: taller-03-00-info-publica
+  x-ibm-name: taller-03-00-info-publica
+  version: 2.0.0
+  description: |-
+    Version 2.0.0 protección por OAuth/grant APP
+    taller03-00-info-publica
+
+    Este API consulta información en repositorios de información pública.
+    Sirve para labores de recolección de informción para clientes potenciales.
+  contact:
+    name: Jaime Valencia
+    email: jaimev@vc-soft.com
+schemes:
+  - https
+basePath: /grupo00
+produces:
+  - application/json
+consumes:
+  - application/json
+security:
+  - OAuth-GrantAPP:
+      - 'comercios-infoPublica:read:app'
+      - 'usuarios-infoPublica:read:app'
+securityDefinitions:
+  OAuth-GrantAPP:
+    type: oauth2
+    description: OAuth-GrantAPP
+    flow: application
+    x-ibm-oauth-provider: taller05-oauth
+    tokenUrl: 'https://$(catalog.url)/taller05-grupo00/oauth2/token'
+    scopes:
+      'comercios-infoPublica:read:app': Permiso a información publica de comercios. Lectura. Desde app
+      'usuarios-infoPublica:read:app': Permiso a información publica de usuarios. Lectura. Desde app
+  apikey:
+    type: apiKey
+    name: x-client-id
+    in: header
+    x-key-type: client_id
+x-ibm-configuration:
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  assembly:
+    execute:
+      - gatewayscript:
+          version: 2.0.0
+          title: asignaApikeyProvedor
+          source: >-
+            const apim = require('apim');
+
+            console.error("****************** EN taller03 
+            *************************");
+
+            //const apikeyProvider = "Bearer 7gfNF2FJPtoVC3rFP2pWX1nrLWzgY0Zx";
+
+            const apikeyProvider = "Bearer
+            "+apim.getvariable('api.properties.api-key-fullcontact');
+
+
+            context.message.header.set('Authorization', apikeyProvider);
+
+            context.message.header.set('Content-Type', 'application/json');
+
+            console.error(`El valor de api.operation.path  es
+            ${apim.getvariable('api.operation.path')} `);
+
+            console.error(`El valor de target-url-company  es
+            ${apim.getvariable('api.properties.target-url-company')} `);
+
+            console.error(`El valor de target-url-user  es
+            ${apim.getvariable('api.properties.target-url-user')} `);
+
+            console.error(`El valor de Authorization  es
+            ${context.message.header.get('Authorization')} `);
+      - switch:
+          version: 2.0.0
+          title: switch
+          case:
+            - condition: ($operationPath() = '/comercio')
+              execute:
+                - map:
+                    version: 2.0.0
+                    title: preparaRqComercio
+                    inputs:
+                      dominio:
+                        schema:
+                          type: string
+                        variable: request.parameters.dominio
+                    outputs:
+                      output:
+                        schema:
+                          description: ''
+                          type: object
+                          properties:
+                            domain:
+                              type: string
+                              name: domain
+                          example: '{"domain":"vc-soft.com"}'
+                        variable: message.body
+                    actions:
+                      - set: output.domain
+                        from: dominio
+                    options:
+                      mapEnablePostProcessingJSON: false
+                      mapEmulateV4EmptyJSONObject: false
+                      mapEmulateV4DefaultRequiredProps: false
+                      mapReferenceLimit: 1
+                - invoke:
+                    title: invokeCompany
+                    version: 2.0.0
+                    verb: POST
+                    target-url: $(target-url-company)
+                    header-control:
+                      type: blacklist
+                      values:
+                        - ^x-client-id$
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    cache-response: protocol
+                    output: companyData
+                - gatewayscript:
+                    version: 2.0.0
+                    title: validateRsProvider
+                    source: >-
+                      /*******************************************************
+                       * \ \   / / ___/ ___| / _ \|  ___|_   _|
+                       *  \ \ / | |   \___ \| | | | |_    | |  
+                       *   \ V /| |___ ___) | |_| |  _|   | |  
+                       *    \_/  \____|____/ \___/|_|     |_|  
+                       * Documento propiedad Intelectual de VCSOFT., Se prohíbe su reproducción, uso, aplicación total o parcial 
+                       * en cualquier medio o en cualquier proyecto, sin previa autorización.
+                       *  La información contenida en este documento es confidencial y reservada, y está dirigida exclusivamente 
+                       * a personal interno a la empresa definida en la carátula de este documento.
+                       *  La información contenida en este documento no puede ser divulgada, duplicada o utilizada con propósitos 
+                       * distintos a los autorizados expresamente por VCSOFT
+                       * 
+                       *******************************************************
+                       * 
+                       * Validaciones de la respuesta final
+                       * 
+                       ****************************
+                       *****/
+                      console.error("Inicio de validateResponse version
+                      Comercio.1.8.34");
+
+
+                      const apim = require('apim');
+
+
+                      const defaultErrorMsg = "Service unavailable";
+
+
+                      const messageBody = apim.getvariable('companyData.body');
+
+                      const statusCode =
+                      apim.getvariable('companyData.status.code');
+
+                      console.error("  companyData.body", messageBody);
+
+                      console.error("=========================================");
+
+                      console.error("  companyData.status",
+                      apim.getvariable('companyData.status'));
+
+                      console.error("  companyData.status.code",
+                      apim.getvariable('companyData.status.code'));
+
+                      console.error("  companyData",
+                      apim.getvariable('companyData'));
+
+                      console.error("=========================================");
+
+                      let errors = [];
+
+
+                      if(!messageBody){ 
+                         setErrors(statusCode,
+                              defaultErrorMsg,
+                              ['El servicio interno no entregó resultado esperado']);
+                      }
+
+                      /*
+
+                      if(statusCode!=200){ 
+                         setErrors(statusCode,
+                                  defaultErrorMsg,
+                                  [ defaultErrorMsg ],true); 
+                      }
+
+                      */
+
+
+                      if(errors.length > 0 ){
+                          throwError()
+                      }
+
+
+                      function throwError(){
+                         apim.setvariable("ctx.errorData", errors);
+                         const minStatus = errors.reduce((min, err) => err.code < min ? err.code : min, errors[0].code);
+                         apim.error("ResponseException",minStatus,defaultErrorMsg,defaultErrorMsg);
+                      }
+
+
+                      /** registra objeto Error ***/
+
+                      function setErrors(code, title, details, isImmediate){
+                          
+                          details.map(detail => {
+                              const error =  {
+                                  "code": code,
+                                  "title": title,
+                                  "detail": detail
+                              };
+                              
+                              errors.push(error);
+                              
+                              if(isImmediate){
+                                  console.error("Entro con el codigo de error",code );
+                                  throwError();
+                              }
+                          })
+                      }
+                - map:
+                    version: 2.0.0
+                    title: preparaRespuesta
+                    inputs:
+                      input:
+                        schema:
+                          description: ''
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              name: name
+                            location:
+                              type: string
+                              name: location
+                            twitter:
+                              name: twitter
+                            linkedin:
+                              type: string
+                              name: linkedin
+                            facebook:
+                              name: facebook
+                            bio:
+                              type: string
+                              name: bio
+                            logo:
+                              type: string
+                              name: logo
+                            website:
+                              type: string
+                              name: website
+                            founded:
+                              type: number
+                              name: founded
+                            employees:
+                              type: number
+                              name: employees
+                            locale:
+                              type: string
+                              name: locale
+                            category:
+                              type: string
+                              name: category
+                            details:
+                              type: object
+                              properties:
+                                locales:
+                                  type: array
+                                  items:
+                                    properties:
+                                      code:
+                                        type: string
+                                        name: code
+                                      name:
+                                        type: string
+                                        name: name
+                                    type: object
+                                  name: locales
+                                categories:
+                                  type: array
+                                  items:
+                                    properties:
+                                      code:
+                                        type: string
+                                        name: code
+                                      name:
+                                        type: string
+                                        name: name
+                                    type: object
+                                  name: categories
+                                industries:
+                                  type: array
+                                  items:
+                                    properties:
+                                      type:
+                                        type: string
+                                        name: type
+                                      name:
+                                        type: string
+                                        name: name
+                                      code:
+                                        type: string
+                                        name: code
+                                    type: object
+                                  name: industries
+                                emails:
+                                  type: array
+                                  items:
+                                    required: []
+                                    properties: {}
+                                    type: object
+                                  name: emails
+                                phones:
+                                  type: array
+                                  items:
+                                    required: []
+                                    properties: {}
+                                    type: object
+                                  name: phones
+                                profiles:
+                                  type: object
+                                  properties:
+                                    linkedincompany:
+                                      type: object
+                                      properties:
+                                        service:
+                                          type: string
+                                          name: service
+                                        username:
+                                          type: string
+                                          name: username
+                                        userid:
+                                          type: string
+                                          name: userid
+                                        url:
+                                          type: string
+                                          name: url
+                                        bio:
+                                          type: string
+                                          name: bio
+                                        followers:
+                                          type: number
+                                          name: followers
+                                      name: linkedincompany
+                                  name: profiles
+                                locations:
+                                  type: array
+                                  items:
+                                    properties:
+                                      label:
+                                        type: string
+                                        name: label
+                                      addressLine1:
+                                        type: string
+                                        name: addressLine1
+                                      city:
+                                        type: string
+                                        name: city
+                                      region:
+                                        type: string
+                                        name: region
+                                      postalCode:
+                                        type: string
+                                        name: postalCode
+                                      country:
+                                        type: string
+                                        name: country
+                                      countryCode:
+                                        type: string
+                                        name: countryCode
+                                      formatted:
+                                        type: string
+                                        name: formatted
+                                    type: object
+                                  name: locations
+                                images:
+                                  type: array
+                                  items:
+                                    properties:
+                                      value:
+                                        type: string
+                                        name: value
+                                      label:
+                                        type: string
+                                        name: label
+                                    type: object
+                                  name: images
+                                urls:
+                                  type: array
+                                  items:
+                                    properties:
+                                      value:
+                                        type: string
+                                        name: value
+                                      label:
+                                        type: string
+                                        name: label
+                                    type: object
+                                  name: urls
+                                keywords:
+                                  type: array
+                                  items:
+                                    type: string
+                                  name: keywords
+                                keyPeople:
+                                  type: array
+                                  items:
+                                    required: []
+                                    properties: {}
+                                    type: object
+                                  name: keyPeople
+                                traffic:
+                                  type: object
+                                  properties:
+                                    countryRank:
+                                      type: object
+                                      properties:
+                                        global:
+                                          type: object
+                                          properties:
+                                            rank:
+                                              type: number
+                                              name: rank
+                                            name:
+                                              type: string
+                                              name: name
+                                          name: global
+                                      name: countryRank
+                                    localeRank:
+                                      type: object
+                                      properties:
+                                        cl:
+                                          type: object
+                                          properties:
+                                            rank:
+                                              type: number
+                                              name: rank
+                                            name:
+                                              type: string
+                                              name: name
+                                          name: cl
+                                      name: localeRank
+                                  name: traffic
+                              name: details
+                            dataAddOns:
+                              type: array
+                              items:
+                                properties:
+                                  id:
+                                    type: string
+                                    name: id
+                                  name:
+                                    type: string
+                                    name: name
+                                  enabled:
+                                    type: boolean
+                                    name: enabled
+                                  applied:
+                                    type: boolean
+                                    name: applied
+                                  description:
+                                    type: string
+                                    name: description
+                                  docLink:
+                                    type: string
+                                    name: docLink
+                                type: object
+                              name: dataAddOns
+                            updated:
+                              type: string
+                              name: updated
+                        variable: companyData.body
+                        content: application/json
+                    outputs:
+                      response:
+                        schema:
+                          $ref: '#/definitions/ComercioRs'
+                        variable: message.body
+                        content: application/json
+                    actions:
+                      - set: response.data.nombreComercio
+                        from: input.name
+                      - set: response.data.direccionFisica
+                        from: input.location
+                      - set: response.data.direccionWeb
+                        from: input.founded
+                      - set: response.data.descripcion
+                        from: input.bio
+                    options:
+                      mapEnablePostProcessingJSON: true
+                      mapEmulateV4EmptyJSONObject: false
+                      mapEmulateV4DefaultRequiredProps: false
+                      mapReferenceLimit: 2
+                      mapNullValue: true
+                      messagesInputData: info
+            - condition: ($operationPath() = '/usuario')
+              execute:
+                - map:
+                    version: 2.0.0
+                    title: preparaRqUsuario
+                    inputs:
+                      mail:
+                        schema:
+                          type: string
+                        variable: request.parameters.mail
+                    outputs:
+                      output:
+                        schema:
+                          description: emailJson
+                          type: object
+                          properties:
+                            email:
+                              type: string
+                              name: email
+                        variable: message.body
+                        content: application/json
+                    actions:
+                      - set: output.email
+                        from: mail
+                    options:
+                      mapEnablePostProcessingJSON: false
+                      mapEmulateV4EmptyJSONObject: false
+                      mapEmulateV4DefaultRequiredProps: false
+                      mapReferenceLimit: 1
+                - invoke:
+                    version: 2.0.0
+                    title: invokeUser
+                    header-control:
+                      type: blacklist
+                      values: []
+                    parameter-control:
+                      type: whitelist
+                      values: []
+                    timeout: 60
+                    verb: POST
+                    cache-response: protocol
+                    cache-ttl: 900
+                    stop-on-error: []
+                    target-url: $(target-url-user)
+                - gatewayscript:
+                    version: 2.0.0
+                    title: validateRsProvider
+                    source: >-
+                      /*******************************************************
+                       * \ \   / / ___/ ___| / _ \|  ___|_   _|
+                       *  \ \ / | |   \___ \| | | | |_    | |  
+                       *   \ V /| |___ ___) | |_| |  _|   | |  
+                       *    \_/  \____|____/ \___/|_|     |_|  
+                       * Documento propiedad Intelectual de VCSOFT., Se prohíbe su reproducción, uso, aplicación total o parcial 
+                       * en cualquier medio o en cualquier proyecto, sin previa autorización.
+                       *  La información contenida en este documento es confidencial y reservada, y está dirigida exclusivamente 
+                       * a personal interno a la empresa definida en la carátula de este documento.
+                       *  La información contenida en este documento no puede ser divulgada, duplicada o utilizada con propósitos 
+                       * distintos a los autorizados expresamente por VCSOFT
+                       * 
+                       *******************************************************
+                       * 
+                       * Validaciones de la respuesta final
+                       * 
+                       ****************************
+                       *****/
+                      console.error("Inicio de validateResponse version
+                      Usuario.1.8.54");
+
+
+                      const apim = require('apim');
+
+
+                      const defaultErrorMsg = "Service unavailable";
+
+
+                      const messageBody = apim.getvariable('message.body');
+
+                      const statusCode =
+                      apim.getvariable('message.status.code');
+
+
+
+                      console.error("  message.body", messageBody);
+
+                      console.error("=========================================");
+
+                      console.error("  statusCode", statusCode);
+
+                      console.error("=========================================");
+
+                      let errors = [];
+
+
+                      if(!messageBody){ 
+                         setErrors(statusCode,
+                              defaultErrorMsg,
+                              ['El servicio interno no entregó resultado esperado']);
+                      }
+
+                      /*
+
+                      if(statusCode!=200){ 
+                         setErrors(statusCode,
+                                  defaultErrorMsg,
+                                  [ defaultErrorMsg ],true); 
+                      }
+
+                      */
+
+
+
+                      if(errors.length > 0 ){
+                          throwError()
+                      }
+
+
+                      function throwError(){
+                         apim.setvariable("ctx.errorData", errors);
+                         const minStatus = errors.reduce((min, err) => err.code < min ? err.code : min, errors[0].code);
+                         apim.error("ResponseException",minStatus,defaultErrorMsg,defaultErrorMsg);
+                      }
+
+
+                      /** registra objeto Error ***/
+
+                      function setErrors(code, title, details, isImmediate){
+                          
+                          details.map(detail => {
+                              const error =  {
+                                  "code": code,
+                                  "title": title,
+                                  "detail": detail
+                              };
+                              
+                              errors.push(error);
+                              
+                              if(isImmediate){
+                                  console.error("Entro con el codigo de error",code );
+                                  throwError();
+                              }
+                          })
+                      }
+                - map:
+                    version: 2.0.0
+                    title: preparaRespuesta
+                    inputs:
+                      input:
+                        schema:
+                          description: ''
+                          type: object
+                          properties:
+                            fullName:
+                              type: string
+                              name: fullName
+                            ageRange:
+                              name: ageRange
+                            gender:
+                              type: string
+                              name: gender
+                            location:
+                              type: string
+                              name: location
+                            title:
+                              type: string
+                              name: title
+                            organization:
+                              name: organization
+                            twitter:
+                              name: twitter
+                            linkedin:
+                              type: string
+                              name: linkedin
+                            facebook:
+                              name: facebook
+                            bio:
+                              type: string
+                              name: bio
+                            avatar:
+                              type: string
+                              name: avatar
+                            website:
+                              type: string
+                              name: website
+                            details:
+                              type: object
+                              properties:
+                                name:
+                                  type: object
+                                  properties:
+                                    given:
+                                      type: string
+                                      name: given
+                                    family:
+                                      type: string
+                                      name: family
+                                    full:
+                                      type: string
+                                      name: full
+                                  name: name
+                                age:
+                                  name: age
+                                gender:
+                                  type: string
+                                  name: gender
+                                demographics:
+                                  type: object
+                                  properties:
+                                    gender:
+                                      type: string
+                                      name: gender
+                                  name: demographics
+                                emails:
+                                  type: array
+                                  items:
+                                    required: []
+                                    properties: {}
+                                    type: object
+                                  name: emails
+                                phones:
+                                  type: array
+                                  items:
+                                    required: []
+                                    properties: {}
+                                    type: object
+                                  name: phones
+                                profiles:
+                                  type: object
+                                  properties:
+                                    linkedin:
+                                      type: object
+                                      properties:
+                                        url:
+                                          type: string
+                                          name: url
+                                        bio:
+                                          type: string
+                                          name: bio
+                                        service:
+                                          type: string
+                                          name: service
+                                      name: linkedin
+                                  name: profiles
+                                locations:
+                                  type: array
+                                  items:
+                                    properties:
+                                      country:
+                                        type: string
+                                        name: country
+                                      countryCode:
+                                        type: string
+                                        name: countryCode
+                                      formatted:
+                                        type: string
+                                        name: formatted
+                                    type: object
+                                  name: locations
+                                employment:
+                                  type: array
+                                  items:
+                                    properties:
+                                      current:
+                                        type: boolean
+                                        name: current
+                                      title:
+                                        type: string
+                                        name: title
+                                    type: object
+                                  name: employment
+                                photos:
+                                  type: array
+                                  items:
+                                    properties:
+                                      label:
+                                        type: string
+                                        name: label
+                                      value:
+                                        type: string
+                                        name: value
+                                    type: object
+                                  name: photos
+                                education:
+                                  type: array
+                                  items:
+                                    properties:
+                                      name:
+                                        type: string
+                                        name: name
+                                      degree:
+                                        type: string
+                                        name: degree
+                                      end:
+                                        type: object
+                                        properties:
+                                          year:
+                                            type: number
+                                            name: year
+                                        name: end
+                                    type: object
+                                  name: education
+                                urls:
+                                  type: array
+                                  items:
+                                    properties:
+                                      value:
+                                        type: string
+                                        name: value
+                                    type: object
+                                  name: urls
+                                interests:
+                                  type: array
+                                  items:
+                                    required: []
+                                    properties: {}
+                                    type: object
+                                  name: interests
+                              name: details
+                            updated:
+                              type: string
+                              name: updated
+                        variable: message.body
+                        content: application/json
+                    outputs:
+                      response:
+                        schema:
+                          $ref: '#/definitions/UsuarioRs'
+                        variable: message.body
+                        content: application/json
+                    actions:
+                      - set: response.data.nombreUsuario
+                        from: input.fullName
+                      - set: response.data.cargo
+                        from: input.title
+                      - set: response.data.descripción
+                        from: input.bio
+                      - set: response.data.direccionFisica
+                        from: input.location
+                      - set: response.data.direccionWeb
+                        from: input.website
+                      - set: response.data.direccionLinkedin
+                        from: input.linkedin
+                      - set: response.data.logo
+                        from: input.avatar
+                      - set: response.meta._version
+                        value: apim.getvariable('api.version')
+                    options:
+                      mapEnablePostProcessingJSON: false
+                      mapEmulateV4EmptyJSONObject: false
+                      mapEmulateV4DefaultRequiredProps: false
+                      mapReferenceLimit: 3
+                      messagesInputData: info
+    catch:
+      - default:
+          - gatewayscript:
+              version: 2.0.0
+              title: generarError
+              source: |-
+                const errors = { "code": 400,
+                                "title": "Datos incompletos",
+                                "detail": "Tempus fugit"
+                              }
+
+                session.output.write({"errors": errors});
+  properties:
+    target-url-company:
+      value: 'https://api.fullcontact.com/v3/company.enrich'
+      description: >-
+        The URL of the target service
+
+        REAL: https://api.fullcontact.com/v3/company.enrich
+
+        Mock Microcks:
+        https://microcks.vc-soft.com:8080/rest/full-contact/1.0.0/v3/company.enrich
+
+        Mock Postman:
+        https://9a7ae1f3-194d-4dbd-8d89-83bd72599933.mock.pstmn.io/v3/company.enrich
+      encoded: false
+    api-key-fullcontact:
+      value: 7gfNF2FJPtoVC3rFP2pWX1nrLWzgY0Zx
+    target-url-user:
+      value: 'https://api.fullcontact.com/v3/person.enrich'
+      description: >-
+        Servicio datos publicos persona por mail
+
+        * REAL: https://api.fullcontact.com/v3/person.enrich
+
+        * Microcks:
+        https://microcks.vc-soft.com:8080/rest/full-contact/1.0.0/v3/person.enrich
+
+        * Postman:
+        https://9a7ae1f3-194d-4dbd-8d89-83bd72599933.mock.pstmn.io/v3/person.enrich
+  cors:
+    enabled: true
+  catalogs:
+    sandbox:
+      properties:
+        api-key-fullcontact: 7gfNF2FJPtoVC3rFP2pWX1nrLWzgY0Zx
+        target-url-user: 'https://api.fullcontact.com/v3/person.enrich'
+        target-url-company: 'https://api.fullcontact.com/v3/company.enrich'
+    publico:
+      properties:
+        api-key-fullcontact: 3QEci3wkZy84gFMIf0EB6ifmbDkMkI73
+        target-url-user: >-
+          https://9a7ae1f3-194d-4dbd-8d89-83bd72599933.mock.pstmn.io/v3/person.enrich
+        target-url-company: >-
+          https://9a7ae1f3-194d-4dbd-8d89-83bd72599933.mock.pstmn.io/v3/company.enrich
+  application-authentication:
+    certificate: false
+  activity-log:
+    success-content: payload
+    error-content: payload
+    enabled: true
+  buffering: true
+tags:
+  - name: comercio
+  - name: usuario
+definitions:
+  Comercio:
+    title: Root Type for Comercio
+    description: Información publica del comercio
+    type: object
+    properties:
+      nombreComercio:
+        type: string
+      descripcion:
+        type: string
+      direccionFisica:
+        type: string
+      direccionWeb:
+        type: string
+      direccionLinkedin:
+        type: string
+      direccionTwitter:
+        type: string
+      logo:
+        type: string
+    example:
+      nombreComercio: ''
+      descripcion: ''
+      direccionFisica: ''
+      direccionWeb: ''
+      direccionLinkedin: ''
+      direccionTwitter: ''
+      logo: ''
+  Usuario:
+    title: Root Type for Usuario
+    description: Información pública del usuario
+    type: object
+    properties:
+      nombreUsuario:
+        type: string
+      cargo:
+        type: string
+      descripción:
+        type: string
+      direccionFisica:
+        type: string
+      direccionWeb:
+        type: string
+      direccionLinkedin:
+        type: string
+      direccionTwitter:
+        type: string
+      logo:
+        type: string
+    example:
+      nombreUsuario: ''
+      cargo: ''
+      descripción: ''
+      direccionFisica: ''
+      direccionWeb: ''
+      direccionLinkedin: ''
+      direccionTwitter: ''
+      logo: ''
+  ComercioRs:
+    description: ''
+    required:
+      - meta
+      - data
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/_meta'
+        description: ''
+      data:
+        $ref: '#/definitions/Comercio'
+        description: ''
+    example:
+      meta:
+        _msgId: some text
+        _version: some text
+        _rqDateTime: '2018-02-10T09:30Z'
+        _transactionId: some text
+        _rsLength: 0
+        _clientId: some text
+      data:
+        nombreComercio: some text
+        descripcion: some text
+        direccionFisica: some text
+        direccionWeb: some text
+        direccionLinkedin: some text
+        direccionTwitter: some text
+        logo: some text
+  _meta:
+    title: Root Type for _meta
+    description: ''
+    type: object
+    properties:
+      _msgId:
+        type: string
+      _version:
+        type: string
+      _rqDateTime:
+        format: date-time
+        type: string
+      _transactionId:
+        type: string
+      _rsLength:
+        format: int32
+        type: integer
+      _clientId:
+        type: string
+    example:
+      _msgId: e8410f95-5097-4604-8dc3-6bd4a97ba5a3
+      _version: 1.0.2
+      _rqDateTime: '2018-02-10T09:30'
+      _transactionId: '77333456789099'
+      _rsLength: 1
+      _clientId: 899812212-1
+  _error:
+    description: Definición de mensaje de error de JSON-API
+    type: object
+    properties:
+      id:
+        description: >-
+          JSON-API Error A unique identifier for this particular occurrence of
+          the problem.
+        type: string
+      status:
+        description: >-
+          The HTTP status code applicable to this problem, expressed as a string
+          value.
+        type: string
+      code:
+        description: 'An application-specific error code, expressed as a string value.'
+        type: string
+      title:
+        description: >-
+          A short, human-readable summary of the problem. It **SHOULD NOT**
+          change from occurrence to occurrence of the problem, except for
+          purposes of localization.
+        type: string
+      detail:
+        description: >-
+          A human-readable explanation specific to this occurrence of the
+          problem.
+        type: string
+      source:
+        type: object
+        properties:
+          pointer:
+            description: >-
+              A JSON Pointer [RFC6901] to the associated entity in the request
+              document [e.g. "/data" for a primary data object, or
+              "/data/attributes/title" for a specific attribute].
+            type: string
+          parameter:
+            description: A string indicating which query parameter caused the error.
+            type: string
+    example:
+      id: '12345678'
+      status: '400'
+      code: ER123
+      title: Falla en parametros enviados por el cliente
+      detail: Campo en formato incorrecto
+      source:
+        pointer: fecha-desde
+        parameter: fecha-desde
+  ErrorRs:
+    description: ''
+    required:
+      - meta
+      - errors
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/_meta'
+        description: ''
+      errors:
+        description: ''
+        type: array
+        items:
+          $ref: '#/definitions/_error'
+    example:
+      meta:
+        _msgId: some text
+        _version: some text
+        _rqDateTime: '2018-02-10T09:30Z'
+        _transactionId: some text
+        _rsLength: 45
+        _clientId: some text
+      errors:
+        - status: '400'
+          title: some text
+          detail: some text
+          source:
+            pointer: some text
+            parameter: some text
+        - status: '422'
+          title: some text
+          detail: some text
+          source:
+            pointer: some text
+            parameter: some text
+  UsuarioRs:
+    description: ''
+    required:
+      - meta
+      - data
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/_meta'
+        description: ''
+      data:
+        $ref: '#/definitions/Usuario'
+        description: ''
+    example:
+      meta:
+        _msgId: some text
+        _version: some text
+        _rqDateTime: '2018-02-10T09:30Z'
+        _transactionId: some text
+        _rsLength: 23
+        _clientId: some text
+      data:
+        nombreUsuario: some text
+        cargo: some text
+        descripción: some text
+        direccionFisica: some text
+        direccionWeb: some text
+        direccionLinkedin: some text
+        direccionTwitter: some text
+        logo: some text
+  _apicError:
+    title: APIC Error
+    description: Error generado por la plataforma API
+    type: object
+    properties:
+      httpCode:
+        type: string
+      httpMessage:
+        type: string
+      moreInformation:
+        type: string
+    example:
+      httpCode: '429'
+      httpMessage: Too Many Requests
+      moreInformation: Too Many Requests. Upgrade the plan
+paths:
+  /comercio:
+    get:
+      tags:
+        - comercio
+      parameters:
+        - name: dominio
+          description: Es el dominio DNS del comercio
+          in: query
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Comportamiento exitoso
+          schema:
+            $ref: '#/definitions/ComercioRs'
+        '400':
+          description: paramentros incorrectos
+          schema:
+            $ref: '#/definitions/ErrorRs'
+        '429':
+          description: control de Plan
+          schema:
+            $ref: '#/definitions/_apicError'
+      operationId: consultaComercioPorDominio
+      summary: Datos públicos por dominio
+      description: Consulta datos publicos por el dominio del comercio
+      consumes:
+        - application/json
+      produces:
+        - application/json
+  /usuario:
+    get:
+      tags:
+        - usuario
+      parameters:
+        - name: mail
+          description: ''
+          in: query
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Comportamiento exitoso
+          schema:
+            $ref: '#/definitions/UsuarioRs'
+          examples:
+            application/json:
+              meta:
+                _msgId: some text
+                _version: some text
+                _rqDateTime: '2018-02-10T09:30Z'
+                _transactionId: some text
+                _rsLength: 95
+                _clientId: some text
+              data:
+                nombreUsuario: some text
+                cargo: some text
+                descripción: some text
+                direccionFisica: some text
+                direccionWeb: some text
+                direccionLinkedin: some text
+                direccionTwitter: some text
+                logo: some text
+        '400':
+          description: Parametro mail incorrecto
+          schema:
+            $ref: '#/definitions/ErrorRs'
+          examples:
+            application/json:
+              meta:
+                _msgId: some text
+                _version: some text
+                _rqDateTime: '2018-02-10T09:30Z'
+                _transactionId: some text
+                _rsLength: 2
+                _clientId: some text
+              errors:
+                - id: some text
+                  status: some text
+                  code: some text
+                  title: some text
+                  detail: some text
+                  source:
+                    pointer: some text
+                    parameter: some text
+                - id: some text
+                  status: some text
+                  code: some text
+                  title: some text
+                  detail: some text
+                  source:
+                    pointer: some text
+                    parameter: some text
+        '401':
+          description: Incumplimiento de autorización
+          schema:
+            $ref: '#/definitions/_apicError'
+        '429':
+          description: Control de plan
+          schema:
+            $ref: '#/definitions/_apicError'
+      operationId: getUserByMail
+      summary: consulta por mail
+      description: Consulta de datos publicos por mail
+      consumes:
+        - application/json
+      produces:
+        - application/json
