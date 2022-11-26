@@ -1,0 +1,3420 @@
+openapi: 3.0.1
+info:
+  title: Transacción en línea
+  version: 1.2.1
+  description: >
+    API que permite consultar la información referente a las ventas en línea de
+    los comercios. Permite filtrar por fechas, rut de comercio, codigo de
+    comercio, entre otros. Cuenta con una historia de 6 meses y las
+    transacciones puedes ser vistas casi en tiempo real respecto a lo que esta
+    ocurriendo en el comercio. Al buscar información dentro del repositorio de
+    base24 (ptlf) se pueden visualizar todo tipo de transacciones financieras
+    provenientes de todos los canales, ya sean presenciales o no presenciales.
+
+
+    # Acceso y Autorización
+
+    Esta API obliga que los consumidores cumplan con las siguientes condiciones:
+     - Tráfico a Datapower.
+     - Cuenta activa en el portal de APIs privadas de Transbank.
+     - Aplicación registrada en el portal de APIs y suscripta a la API(Para mas detalle https://confluence.tools.tbk.cl/pages/viewpage.action?pageId=107251374).
+     - Las peticiones a los distintos métodos deben presentar el API-Key correspondiente a la aplicación.
+
+    # Cifrado de mensajería
+
+
+    La API cuenta con cifrado de request y response, en el siguiente link podrá
+    encontrar una información mas detallada del cifrado usado
+    https://confluence.tools.tbk.cl/pages/viewpage.action?pageId=107250531&src=contextnavpagetreemode
+
+
+    ## Cifrado de la solicitud 
+
+
+    Para realizar la solicitud a la API se debe tener en cuenta que la data que
+    se enviará debe estar cifrada de acuerdo a los siguientes consideraciones:
+
+
+    - El mensaje de la solicitud deberá ser cifrado por medio de **JWE** con
+    **AES256GCM** y debe ser enviado en el cuerpo de la solicitud
+    https://www.rfc-editor.org/rfc/rfc7516.
+
+
+    - La llave que se usara para el cifrado de la mensajeria sera una llave
+    publica entregada por Transbank.
+
+
+    - **JWE** posee tres tipos de serialización o representación del mensaje
+    cifrado para el caso de la API se usara el formato **COMPACT**, el cual es
+    una representación que cuenta de una cadena de caracteres separador por
+    punto https://www.rfc-editor.org/rfc/rfc7516#page-8.
+
+
+    ## Cifrado de la respuesta 
+
+
+    La API entregara su respuesta con la data cifrada, este cifrado que
+    realizara la API contara con la siguienteds condsideraciones:
+
+
+    - El mensaje de la solicitud deberá ser cifrado por medio de **JWE** con
+    **AES256GCM** y debe ser enviado en el cuerpo de la solicitud
+    https://www.rfc-editor.org/rfc/rfc7516.
+
+
+    - **JWE** posee tres tipos de serialización o representación del mensaje
+    cifrado para el caso de la API se usara el formato **COMPACT**, el cual es
+    una representación que cuenta de una cadena de caracteres separador por
+    punto https://www.rfc-editor.org/rfc/rfc7516#page-8.
+
+
+    - La llave usada para este cifrado debe ser una llave publica que debe ser
+    entregada por el consumidor en la solicitud enviada. Esta llave debe ser
+    enviada como un **Header Protegido de JWE** con el nombre de Header
+    **app-key**.
+     
+        **Nota:** No es un Header HTPP es un Header de la mensajeria cifirada https://www.rfc-editor.org/rfc/rfc7516#page-8.
+
+        Esta llave debe ir en formato **JWK** https://rfc-editor.org/rfc/rfc7517 puede usar alguna libreria para la generacion de esta o si lo desea una pagina como la siguiente https://mkjwk.org/ 
+        Esta llave puede ser igual o diferente para cada una de las solicitudes sera desición del consumidor como la desea usar.
+     
+    # Uso ambiente Mock
+
+    La API posee un ambiente de Mocks el cual permite realizar pruebas de
+    integraciones desde su aplicativo hacia la API, para hacer uso de este
+    ambiente la API cuenta con la disponibilidad de recibir el Header
+    **(X-Mock)**, el cual cuando es enviado garantiza que la petición va ir al
+    ambiente de Mock. El valor enviado en el header corresponderá al status HTTP
+    que deseamos recibir, cada una de las operaciones tiene descrito los
+    posibles mensajes que puede entregar.
+
+
+    **Nota:** Los datos devueltos por el ambiente Mocks son totalmente ficticios
+    y no representa de ninguna forma datos relacionados con sus datos reales.
+  contact:
+    name: Mauricio Iturra
+    email: miturra@transbank.cl
+  x-ibm-name: transaccion-en-linea
+servers:
+  - url: /
+paths:
+  /online-transactions/totalize:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnlineTransactionsRq'
+        required: true
+      tags:
+        - OnlineTransactions
+      parameters:
+        - name: X-Mock
+          description: >-
+            Header requerido cuando se realiza invocación a Mocks, si se desea
+            enviar este header es necesario que el valor enviado corresponda a
+            la respuesta que espera recibir.
+          schema:
+            type: string
+          in: header
+        - name: API-Key
+          description: >-
+            Identificador de la aplicación usada para autenticarse al recurso de
+            la API
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TotalOnlineTransactionsRs'
+              examples:
+                application/json:
+                  value:
+                    data:
+                      total: 327974
+                    meta:
+                      _msgId: e83f2936-3a8c-4d95-9d61-38b24f0701f4
+                      _version: 0.0.4
+                      _rqDateTime: 2018-02-10T09:30Z
+                      _clientId: 038901-1
+                      _transactionId: ba440c87-80cf-4d74-8bc1-0da3f6e93199
+                      _totalTransactions: 59
+          description: >-
+            Resultado exitoso para la totalización de las transacciones en linea
+            filtradas apartir de los campos ingresados.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_verificationError'
+              example:
+                httpCode: '401'
+                httpMessage: Unauthorized
+                moreInformation: Invalid client id or secret.
+          description: Errores de Validación de mensajería y precondiciones de invocación.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRs'
+              example:
+                meta:
+                  _msgId: e83f2936-3a8c-4d95-9d61-38b24f0701f4
+                  _version: 0.0.4
+                  _rqDateTime: 2018-02-10T09:30Z
+                  _clientId: 038901-1
+                  _transactionId: ba440c87-80cf-4d74-8bc1-0da3f6e93199
+                errors:
+                  - status: '422'
+                    title: currency invalido
+                    detail: >-
+                      El valor de currency 'COP' no esta entre los valores
+                      permitidos
+                    source:
+                      pointer: data.currency
+                  - status: '422'
+                    title: fromDate invalido
+                    detail: El campo fromDate debe cumplir con el formato especificado
+                    source:
+                      pointer: data.fromDate
+          description: >-
+            Consulta no procesable debido a que alguno de los campos ingresado
+            no cumple con la estructura esperada.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_verificationError'
+              example:
+                httpCode: '429'
+                httpMessage: Too Many Requests
+                moreInformation: Too Many Requests. Upgrade the plan
+          description: Errores de Validación de mensajería y precondiciones de invocación.
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRs'
+              example:
+                meta:
+                  _msgId: d966df5e-435a-4083-abd4-607949524ce6
+                  _version: 0.0.4
+                  _rqDateTime: 2018-02-10T09:30Z
+                  _clientId: 203030331-2
+                  _transactionId: f06ef751-bc0d-4e1c-8b4e-1bb983c91d59
+                errors:
+                  - status: '503'
+                    title: Servicio interno no disponible
+                    detail: El servicio interno no se encuentra en funcionamiento.
+          description: >-
+            Servicio no disponible, el servicion interno no respondio el mensaje
+            espera
+      deprecated: false
+      security:
+        - APIKey: []
+      operationId: TotalizarTransaccionesEnLinea
+      summary: Creación totalización transacciones en linea
+      description: >-
+        Operación que permite obtener el monto total de las transacciones en
+        linea consultadas apartir de los filtros ingresados.
+      x-codegen-request-body-name: body
+  /online-transactions:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OnlineTransactionsRq'
+        required: true
+      tags:
+        - OnlineTransactions
+      parameters:
+        - name: API-Key
+          description: >-
+            Identificador de la aplicación usada para autenticarse al recurso de
+            la API
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: X-Mock
+          description: >-
+            Header requerido cuando se realiza invocación a Mocks, si se desea
+            enviar este header es necesario que el valor enviado corresponda a
+            la respuesta que espera recibir.
+          schema:
+            type: string
+          in: header
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnlineTransactionsRs'
+              examples:
+                application/json:
+                  value:
+                    data:
+                      - address:
+                          city: TEMUCO
+                          comuna: TEMUCO
+                          country: CL
+                          fullAddress: CALLE GRAL. CRUZ 320
+                        application:
+                          version: ' '
+                        status: REJECTED
+                        authorizationCode: '137770'
+                        buyOrder: '00000000000000000000000000'
+                        cardBrand: NONE
+                        cardNumber: '2957'
+                        change: 0
+                        checkingAccountNumber: ' '
+                        currencyCode: 152
+                        employeeCode: ' '
+                        entryMode: 10
+                        establishment:
+                          businessName: CENCOSUD RETAIL SA
+                          connectionType: HOST
+                          rut: 81201000K
+                          fantasyName: STA ISABEL TEMUCO GCRU
+                        installment:
+                          type: VTN
+                          number: 0
+                        invoiceNumber: '0000000000'
+                        messageType: 210
+                        paymentMethod: D
+                        productAmount: 20836
+                        retailerId: '597028706480'
+                        surcharge: false
+                        terminal:
+                          id: HOST_PORTAL
+                        tipAmount: 0
+                        amount: 20836
+                        subtype: '14'
+                        id: 658854
+                        date: 22-05-24T15:00:13
+                        brandCode: TB
+                      - address:
+                          city: SANTIAGO
+                          comuna: VITACURA
+                          country: CL
+                          fullAddress: PRUEBAS AREA DE POS
+                        application:
+                          version: I193L2
+                        status: APPROVED
+                        authorizationCode: 165066 B
+                        buyOrder: '00000000000000000000000000'
+                        cardBrand: V
+                        cardNumber: '6590'
+                        change: 0
+                        checkingAccountNumber: '4051886000056590'
+                        currencyCode: 152
+                        employeeCode: ' '
+                        entryMode: 21
+                        establishment:
+                          businessName: ZENIT SEGUROS GENERALES S.A
+                          connectionType: POS
+                          rut: '760612235'
+                          fantasyName: TEST NORMAL SOLO C2C )
+                        installment:
+                          type: VTN
+                          number: 0
+                        invoiceNumber: '0000'
+                        messageType: 210
+                        operationNumber: 180
+                        paymentMethod: C
+                        productAmount: 155
+                        retailerId: '597029414300'
+                        surcharge: false
+                        terminal:
+                          id: IT750150
+                          serialNumber: '161416243491'
+                        tipAmount: 0
+                        amount: 155
+                        subtype: '10'
+                        voucherType: '0'
+                        id: 659045
+                        date: 22-05-24T14:58:32
+                        brandCode: TB
+                      - address:
+                          city: SANTIAGO
+                          comuna: VITACURA
+                          country: CL
+                          fullAddress: PRUEBAS AREA DE POS
+                        application:
+                          version: V193L6
+                        status: APPROVED
+                        authorizationCode: 392512 B
+                        buyOrder: '00000000000000000000000000'
+                        cardBrand: M
+                        cardNumber: '9480'
+                        change: 0
+                        checkingAccountNumber: '4051886000056590'
+                        currencyCode: 152
+                        employeeCode: ' '
+                        entryMode: 21
+                        establishment:
+                          businessName: ZENIT SEGUROS GENERALES S.A
+                          connectionType: POS
+                          rut: '760612235'
+                          fantasyName: TEST NORMAL SOLO C2C )
+                        installment:
+                          type: VTN
+                          number: 0
+                        invoiceNumber: '0000'
+                        messageType: 210
+                        operationNumber: 7
+                        paymentMethod: C
+                        productAmount: 469980
+                        retailerId: '597029414300'
+                        surcharge: false
+                        terminal:
+                          id: '75001549'
+                          serialNumber: '331-352-712 '
+                        tipAmount: 0
+                        amount: 469980
+                        subtype: '10'
+                        voucherType: '0'
+                        id: 659029
+                        date: 22-05-24T14:35:09
+                        brandCode: TB
+                      - address:
+                          city: SANTIAGO
+                          comuna: VITACURA
+                          country: CL
+                          fullAddress: PRUEBAS AREA DE POS
+                        application:
+                          version: V193L6
+                        status: APPROVED
+                        authorizationCode: 910400 B
+                        buyOrder: '00000000000000000000000000'
+                        cardBrand: V
+                        cardNumber: '8652'
+                        change: 0
+                        checkingAccountNumber: ' '
+                        currencyCode: 152
+                        employeeCode: ' '
+                        entryMode: 71
+                        establishment:
+                          businessName: ZENIT SEGUROS GENERALES S.A
+                          connectionType: POS
+                          rut: '760612235'
+                          fantasyName: TEST NORMAL SOLO C2C )
+                        installment:
+                          type: VTN
+                          number: 0
+                        invoiceNumber: '0000'
+                        messageType: 210
+                        operationNumber: 20
+                        paymentMethod: C
+                        productAmount: 476
+                        retailerId: '597029414300'
+                        surcharge: false
+                        terminal:
+                          id: '75001595'
+                          serialNumber: '332-175-062 '
+                        tipAmount: 0
+                        amount: 476
+                        subtype: '10'
+                        voucherType: '0'
+                        id: 658982
+                        date: 22-05-24T13:25:22
+                      - address:
+                          city: SANTIAGO
+                          comuna: VITACURA
+                          country: CL
+                          fullAddress: PRUEBAS AREA DE POS
+                        application:
+                          version: V193L6
+                        status: APPROVED
+                        authorizationCode: 450944 B
+                        buyOrder: '00000000000000000000000000'
+                        cardBrand: V
+                        cardNumber: '8652'
+                        change: 0
+                        checkingAccountNumber: ' '
+                        currencyCode: 152
+                        employeeCode: ' '
+                        entryMode: 71
+                        establishment:
+                          businessName: ZENIT SEGUROS GENERALES S.A
+                          connectionType: POS
+                          rut: '760612235'
+                          fantasyName: TEST NORMAL SOLO C2C )
+                        installment:
+                          type: VTN
+                          number: 0
+                        invoiceNumber: '0000'
+                        messageType: 210
+                        operationNumber: 19
+                        paymentMethod: C
+                        productAmount: 476
+                        retailerId: '597029414300'
+                        surcharge: false
+                        terminal:
+                          id: '75001595'
+                          serialNumber: '332-175-062 '
+                        tipAmount: 0
+                        amount: 476
+                        subtype: '10'
+                        voucherType: '0'
+                        id: 658981
+                        date: 22-05-24T13:13:09
+                      - address:
+                          city: SANTIAGO
+                          comuna: VITACURA
+                          country: CL
+                          fullAddress: PRUEBAS AREA DE POS
+                        application:
+                          version: V193L6
+                        status: APPROVED
+                        authorizationCode: 545343 B
+                        buyOrder: '00000000000000000000000000'
+                        cardBrand: V
+                        cardNumber: '8652'
+                        change: 0
+                        checkingAccountNumber: ' '
+                        currencyCode: 152
+                        employeeCode: ' '
+                        entryMode: 71
+                        establishment:
+                          businessName: ZENIT SEGUROS GENERALES S.A
+                          connectionType: POS
+                          rut: '760612235'
+                          fantasyName: TEST NORMAL SOLO C2C )
+                        installment:
+                          type: VTN
+                          number: 0
+                        invoiceNumber: '0000'
+                        messageType: 210
+                        operationNumber: 18
+                        paymentMethod: C
+                        productAmount: 476
+                        retailerId: '597029414300'
+                        surcharge: false
+                        terminal:
+                          id: '75001595'
+                          serialNumber: '332-175-062 '
+                        tipAmount: 0
+                        amount: 476
+                        subtype: '10'
+                        voucherType: '0'
+                        id: 658973
+                        date: 22-05-24T12:58:59
+                      - address:
+                          city: SANTIAGO
+                          comuna: VITACURA
+                          country: CL
+                          fullAddress: PRUEBAS AREA DE POS
+                        application:
+                          version: V193L6
+                        status: APPROVED
+                        authorizationCode: 938416 B
+                        buyOrder: '00000000000000000000000000'
+                        cardBrand: M
+                        cardNumber: '9480'
+                        change: 0
+                        checkingAccountNumber: '4051886000056590'
+                        currencyCode: 152
+                        employeeCode: ' '
+                        entryMode: 21
+                        establishment:
+                          businessName: ZENIT SEGUROS GENERALES S.A
+                          connectionType: POS
+                          rut: '760612235'
+                          fantasyName: TEST NORMAL SOLO C2C )
+                        installment:
+                          type: C3C
+                          number: 3
+                        installmentsInfo:
+                          amount:
+                            - 43156
+                            - 43156
+                            - 43158
+                          number:
+                            - 1
+                            - 2
+                            - 3
+                        invoiceNumber: '0000'
+                        messageType: 210
+                        operationNumber: 6
+                        paymentMethod: C
+                        productAmount: 129470
+                        retailerId: '597029414300'
+                        surcharge: false
+                        terminal:
+                          id: '75001549'
+                          serialNumber: '331-352-712 '
+                        tipAmount: 0
+                        amount: 129470
+                        subtype: '10'
+                        voucherType: '0'
+                        id: 658967
+                        date: 22-05-24T12:55:04
+                        brandCode: TB
+                      - address:
+                          city: SANTIAGO
+                          comuna: VITACURA
+                          country: CL
+                          fullAddress: PRUEBAS AREA DE POS
+                        application:
+                          version: V181L1
+                        status: APPROVED
+                        authorizationCode: 324032 B
+                        buyOrder: '00000000000000000000000000'
+                        cardBrand: NONE
+                        cardNumber: '8881'
+                        change: 0
+                        checkingAccountNumber: ' '
+                        currencyCode: 152
+                        employeeCode: ' '
+                        entryMode: 21
+                        establishment:
+                          businessName: ZENIT SEGUROS GENERALES S.A
+                          connectionType: POS
+                          rut: '760612235'
+                          fantasyName: TEST NORMAL SOLO C2C )
+                        installment:
+                          type: VTN
+                          number: 0
+                        invoiceNumber: '0000'
+                        messageType: 210
+                        operationNumber: 738
+                        paymentMethod: D
+                        productAmount: 50
+                        retailerId: '597029414300'
+                        surcharge: false
+                        terminal:
+                          id: '75001091'
+                          serialNumber: '331-839-481 '
+                        tipAmount: 0
+                        amount: 50
+                        subtype: '10'
+                        voucherType: '0'
+                        id: 658964
+                        date: 22-05-24T12:53:08
+                        brandCode: TB
+                      - address:
+                          city: SANTIAGO
+                          comuna: VITACURA
+                          country: CL
+                          fullAddress: PRUEBAS AREA DE POS
+                        application:
+                          version: V193L6
+                        status: APPROVED
+                        authorizationCode: 707275 B
+                        buyOrder: '00000000000000000000000000'
+                        cardBrand: V
+                        cardNumber: '8652'
+                        change: 0
+                        checkingAccountNumber: ' '
+                        currencyCode: 152
+                        employeeCode: ' '
+                        entryMode: 71
+                        establishment:
+                          businessName: ZENIT SEGUROS GENERALES S.A
+                          connectionType: POS
+                          rut: '760612235'
+                          fantasyName: TEST NORMAL SOLO C2C )
+                        installment:
+                          type: VTN
+                          number: 0
+                        invoiceNumber: '0000'
+                        messageType: 210
+                        operationNumber: 17
+                        paymentMethod: C
+                        productAmount: 166618
+                        retailerId: '597029414300'
+                        surcharge: false
+                        terminal:
+                          id: '75001595'
+                          serialNumber: '332-175-062 '
+                        tipAmount: 0
+                        amount: 166618
+                        subtype: '10'
+                        voucherType: '0'
+                        id: 658950
+                        date: 22-05-24T12:43:35
+                      - address:
+                          city: SANTIAGO
+                          comuna: VITACURA
+                          country: CL
+                          fullAddress: PRUEBAS AREA DE POS
+                        application:
+                          version: V193L6
+                        status: REJECTED
+                        authorizationCode: ' '
+                        buyOrder: '00000000000000000000000000'
+                        cardBrand: V
+                        cardNumber: '6590'
+                        change: 0
+                        checkingAccountNumber: ' '
+                        currencyCode: 152
+                        employeeCode: ' '
+                        entryMode: 21
+                        establishment:
+                          businessName: ZENIT SEGUROS GENERALES S.A
+                          connectionType: POS
+                          rut: '760612235'
+                          fantasyName: TEST NORMAL SOLO C2C )
+                        installment:
+                          type: VTN
+                          number: 0
+                        invoiceNumber: '0000'
+                        messageType: 210
+                        operationNumber: 27
+                        paymentMethod: C
+                        productAmount: 3050
+                        retailerId: '597029414300'
+                        surcharge: false
+                        terminal:
+                          id: '75001600'
+                          serialNumber: '332-747-006 '
+                        tipAmount: 0
+                        amount: 3050
+                        subtype: '10'
+                        voucherType: '0'
+                        id: 658939
+                        date: 22-05-24T12:12:24
+                        brandCode: TB
+                    meta:
+                      _msgId: e83f2936-3a8c-4d95-9d61-38b24f0701f4
+                      _version: 0.0.4
+                      _rqDateTime: 2018-02-10T09:30Z
+                      _clientId: 038901-1
+                      _transactionId: ba440c87-80cf-4d74-8bc1-0da3f6e93199
+                      _rsLength: 66
+                      _totalTransactions: 689
+                    pagination:
+                      page: 17
+                      size: 31
+          description: >-
+            Resultado exitoso para la consulta de transacciones en linea con los
+            filtros ingresados.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_verificationError'
+              example:
+                value:
+                  httpCode: '401'
+                  httpMessage: Unauthorized
+                  moreInformation: Invalid client id or secret.
+          description: Errores de Validación de mensajería y precondiciones de invocación.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRs'
+              example:
+                meta:
+                  _msgId: e83f2936-3a8c-4d95-9d61-38b24f0701f4
+                  _version: 0.0.4
+                  _rqDateTime: 2018-02-10T09:30Z
+                  _clientId: 038901-1
+                  _transactionId: ba440c87-80cf-4d74-8bc1-0da3f6e93199
+                errors:
+                  - status: '422'
+                    title: currency invalido
+                    detail: >-
+                      El valor de currency 'COP' no esta entre los valores
+                      permitidos
+                    source:
+                      pointer: data.currency
+                  - status: '422'
+                    title: fromDate invalido
+                    detail: El campo fromDate debe cumplir con el formato especificado
+                    source:
+                      pointer: data.fromDate
+          description: >-
+            Consulta no procesable debido a que alguno de los campos ingresado
+            no cumple con la estructura esperada.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_verificationError'
+              example:
+                value:
+                  httpCode: '429'
+                  httpMessage: Too Many Requests
+                  moreInformation: Too Many Requests. Upgrade the plan
+          description: Errores de Validación de mensajería y precondiciones de invocación.
+        '503':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorRs'
+              example:
+                meta:
+                  _msgId: d966df5e-435a-4083-abd4-607949524ce6
+                  _version: 0.0.4
+                  _rqDateTime: 2018-02-10T09:30Z
+                  _clientId: 203030331-2
+                  _transactionId: f06ef751-bc0d-4e1c-8b4e-1bb983c91d59
+                errors:
+                  - status: '503'
+                    title: Servicio interno no disponible
+                    detail: El servicio interno no se encuentra en funcionamiento.
+          description: >-
+            Servicio no disponible, el servicion interno no respondio el mensaje
+            espera
+      security:
+        - APIKey: []
+      operationId: ObtenerTransaccionesEnLinea
+      summary: Creación consulta transacciones en línea
+      description: Permite obtener las ventas en línea a partir de los filtros ingresados.
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    Address:
+      description: Entidad dirección de las transacciones en linea
+      type: object
+      properties:
+        city:
+          description: Ciudad donde se realizo la transacción
+          type: string
+          example: Rancagua
+        country:
+          description: País en donde se realizo la transacción
+          type: string
+          example: Chile
+        fullAddress:
+          description: Dirección completa del comercio que realizo la transacción
+          type: string
+        comuna:
+          description: >-
+            Nombre de la comuna en la cual se encuentra el comercio que realizo
+            la transacción
+          type: string
+          example: Santiago
+      example:
+        city: Rancagua
+        comune: Santiago
+        country: Chile
+        fullAddress: some text
+    _verificationError:
+      description: Error de verificaciones previas a ejecución de API
+      type: object
+      properties:
+        httpCode:
+          description: Status HTTP
+          type: string
+        httpMessage:
+          description: Mensaje de error
+          type: string
+        moreInformation:
+          description: Descripción del error presentado
+          type: string
+      example:
+        httpCode: '429'
+        httpMessage: Too Many Requests
+        moreInformation: Too Many Requests. Upgrade the plan
+    Application:
+      description: Entidad que representa la aplicación de la transacción
+      type: object
+      properties:
+        id:
+          description: Identificador de la transacción
+          type: string
+        version:
+          description: Versión de la aplicación usada
+          type: string
+    _error:
+      description: Definición de mensaje de error
+      type: object
+      properties:
+        id:
+          description: Identificador único para ésta ocurrencia particular del problema.
+          type: string
+        status:
+          description: >-
+            El código de estado HTTP aplicable a este problema, expresado como
+            un valor string.
+          type: string
+        code:
+          description: >-
+            Código de error específico de la aplicación, expresado como un valor
+            de string.
+          type: string
+        title:
+          description: Un resumen breve y legible del problema.
+          type: string
+        detail:
+          description: >-
+            Una explicación legible y específica para ésta ocurrencia del
+            problema.
+          type: string
+    _links:
+      description: Un objeto de recurso **PUEDE** contener referencias a otros recursos.
+      type: object
+      properties:
+        self:
+          format: uri
+          description: Miembro propio, cuyo valor es una URL para los datos de la relación
+          type: string
+        related:
+          format: uri
+          type: string
+    ErrorRs:
+      description: Representación del error presentado
+      required:
+        - errors
+        - meta
+      type: object
+      properties:
+        errors:
+          description: Errores presentados al momento de realizar la solicitud.
+          type: array
+          items:
+            $ref: '#/components/schemas/_error'
+        meta:
+          $ref: '#/components/schemas/_meta'
+      example:
+        meta:
+          _msgId: e83f2936-3a8c-4d95-9d61-38b24f0701f4
+          _version: 0.0.4
+          _rqDateTime: 2018-02-10T09:30Z
+          _clientId: 038901-1
+          _transactionId: ba440c87-80cf-4d74-8bc1-0da3f6e93199
+        errors:
+          - status: '422'
+            title: currency invalido
+            detail: El valor de currency 'COP' no esta entre los valores permitidos
+            source:
+              pointer: data.attributes.currency
+          - status: '422'
+            title: fromDate invalido
+            detail: El campo fromDate debe cumplir con el formato especificado
+            source:
+              pointer: data.attributes.fromDate
+    _meta:
+      required:
+        - _msgId
+      type: object
+      properties:
+        _msgId:
+          description: Identificado único del mensaje.
+          type: string
+          example: c4e6bd04-5149-11e7-b114-b2f933d5fe66
+        _version:
+          description: Vesión de la API.  Longitud máxima **5** caracteres.
+          type: string
+          example: '1.0'
+        _rqDateTime:
+          format: date-time
+          description: Fecha de la solicitud en formato ISO 8601 'yyyy-MM-ddThh:mm:ss'.
+          type: string
+        _clientId:
+          description: Identificador de la organización que realiza la invocación.
+          type: string
+          example: 899812212-1
+        _transactionId:
+          description: >-
+            Identificador de seguimiento de la invocación realizada. Longitud
+            máxima de **36** caracteres alfanuméricos.
+          type: string
+        _rsLength:
+          description: Total de registros entregados en la respuesta de la solicitud.
+          type: number
+        _totalTransactions:
+          description: Total de transacciones encontradas con los filtros ingresados.
+          type: number
+    Installment:
+      description: Información de las cuotas de la transacción
+      type: object
+      properties:
+        type:
+          description: Tipo de cuota
+          type: string
+        number:
+          description: Cantidad de cuotas
+          type: integer
+    Terminal:
+      description: Entidad con la información del terminal de la aplicación
+      type: object
+      properties:
+        id:
+          description: Identificación de la terminal de la transacción
+          type: string
+        serialNumber:
+          description: Número de serial de la terminal
+          type: string
+    Establishment:
+      description: Entidad con la información del comercio
+      type: object
+      properties:
+        connectionType:
+          description: Tipo de conexion
+          type: string
+        rut:
+          description: Identificación de la organización
+          type: string
+        fantasyName:
+          description: Nombre de Fantasia del comercio
+          type: string
+        commerceName:
+          description: Nombre del comercio
+          type: string
+    InstallmentsInfo:
+      description: ''
+      type: object
+      properties:
+        amount:
+          description: Monto total de la cuota de la transacción
+          type: number
+        number:
+          description: Número de la cuota de la transacción
+          type: integer
+    Transacction:
+      description: Información detallada de la transacción
+      type: object
+      properties:
+        id:
+          description: Identificador de la transacción
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+          description: Dirección física del comercio.
+        status:
+          description: Identificador del estado en el cual se encuentra la transacción
+          enum:
+            - REJECTED
+            - APPROVED
+          type: string
+          example: APPROVED
+        authorizationCode:
+          description: Código de autorización de la transacción
+          type: string
+        buyOrder:
+          description: Identificador de la orden de compra que tiene la transacción
+          type: string
+        cardBrand:
+          description: Marca de la tarjeta usada para el pago de la transacción
+          enum:
+            - AX
+            - M
+            - V
+            - DC
+          type: string
+        cardNumber:
+          description: Numero de la tarjeta usada en el pago de la transacción
+          type: string
+        cdgTypHhRc:
+          description: ''
+          type: integer
+        change:
+          description: Monto del cambio de la transacción
+          type: number
+        checkingAccountNumber:
+          description: ''
+          type: string
+        currencyCode:
+          description: Moneda de la transacción.
+          type: integer
+        employeeCode:
+          description: Código de empleado
+          type: string
+        entryMode:
+          description: ''
+          type: integer
+        establishment:
+          $ref: '#/components/schemas/Establishment'
+          description: Información del comercio
+        interestRate:
+          description: ''
+          type: string
+        invoiceNumber:
+          description: Número boleta
+          type: string
+        messageType:
+          description: ''
+          type: integer
+        operationNumber:
+          description: Numero de Operación
+          type: integer
+        paymentMethod:
+          description: Método de Pago
+          type: string
+        productAmount:
+          description: Cantidad del producto
+          type: number
+        product:
+          description: ''
+          type: string
+        retailerId:
+          description: ''
+          type: string
+        serviceId:
+          description: ''
+          type: string
+        surcharge:
+          description: Representación de la transaccion tiene sobrecargo
+          type: boolean
+        surchargeAmount:
+          description: Monto surcharge/recargo
+          type: number
+        tipAmount:
+          description: Monto de Propina
+          type: number
+        voucherType:
+          description: ''
+          type: string
+        subtype:
+          description: ''
+          type: string
+        amount:
+          description: Monto de la transacción
+          type: number
+        application:
+          $ref: '#/components/schemas/Application'
+        installment:
+          $ref: '#/components/schemas/Installment'
+        terminal:
+          $ref: '#/components/schemas/Terminal'
+        date:
+          format: date-time
+          description: Fecha de la transacción en formato ISO 8601 yyyy-MM-ddTHH:mm:ss.
+          type: string
+        brandCode:
+          description: Codigo de representación de la marca de la tarjeta
+          type: string
+        saleTid:
+          description: ''
+          type: string
+        installmentsInfo:
+          $ref: '#/components/schemas/InstallmentsInfo'
+    _pagination:
+      description: Entidad con la cual se representa la paginación solicitada
+      type: object
+      properties:
+        page:
+          description: Número de la página de la consulta
+          type: integer
+        size:
+          description: Tamaño total de la página de la consulta
+          type: integer
+    TotalOnlineTransactionsRs:
+      description: ''
+      required:
+        - data
+        - meta
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/TotalTransactions'
+        meta:
+          $ref: '#/components/schemas/_meta'
+      example:
+        data:
+          total: 327974
+        meta:
+          _msgId: e83f2936-3a8c-4d95-9d61-38b24f0701f4
+          _version: 0.0.4
+          _rqDateTime: 2018-02-10T09:30Z
+          _clientId: 038901-1
+          _transactionId: ba440c87-80cf-4d74-8bc1-0da3f6e93199
+          _totalTransactions: 59
+    OnlineTransactionsRq:
+      description: ''
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/FiltersOnlineTransactions'
+        pagination:
+          $ref: '#/components/schemas/_pagination'
+          description: ''
+      example:
+        data:
+          applicationId: APPCOMERCE
+          authorizationCode: SHAGDA
+          currency: CLP
+          employeeCode: '103629345'
+          fromAmount: 34.16
+          fromChange: 67.86
+          fromDate: '2022-02-10T09:30:45.000Z'
+          getCount: true
+          typeHrc: true
+          messageType: 7
+          paymentMethod: DEBIT
+          saleType: NULLIFY
+          toAmount: 63.12
+          toChange: 66.53
+          toDate: '2022-04-10T09:30:45.000Z'
+          voucherType: RECEIPT
+          status: APPROVED
+          commerceCodes:
+            - '3091745015'
+            - '481261047'
+          id: 813741
+          rut: 937103-0
+          saleTid: 238204839
+          cardNumber: '9364017402734018403'
+          brandCode: MG
+          connectionType: c
+        pagination:
+          page: 10
+          size: 2
+    OnlineTransactionsRs:
+      description: ''
+      required:
+        - data
+        - meta
+      type: object
+      properties:
+        data:
+          description: ''
+          type: array
+          items:
+            $ref: '#/components/schemas/Transacction'
+        meta:
+          $ref: '#/components/schemas/_meta'
+        pagination:
+          $ref: '#/components/schemas/_pagination'
+          description: Información referente a la paginación
+      example:
+        data:
+          - address:
+              city: TEMUCO
+              comuna: TEMUCO
+              country: CL
+              fullAddress: CALLE GRAL. CRUZ 320
+            application:
+              version: ' '
+            status: REJECTED
+            authorizationCode: '137770'
+            buyOrder: '00000000000000000000000000'
+            cardBrand: NONE
+            cardNumber: '2957'
+            change: 0
+            checkingAccountNumber: ' '
+            currencyCode: 152
+            employeeCode: ' '
+            entryMode: 10
+            establishment:
+              businessName: CENCOSUD RETAIL SA
+              connectionType: HOST
+              rut: 81201000K
+              fantasyName: STA ISABEL TEMUCO GCRU
+            installment:
+              type: VTN
+              number: 0
+            invoiceNumber: '0000000000'
+            messageType: 210
+            paymentMethod: D
+            productAmount: 20836
+            retailerId: '597028706480'
+            surcharge: false
+            terminal:
+              id: HOST_PORTAL
+            tipAmount: 0
+            amount: 20836
+            subtype: '14'
+            id: 658854
+            date: 22-05-24T15:00:13
+            brandCode: TB
+          - address:
+              city: SANTIAGO
+              comuna: VITACURA
+              country: CL
+              fullAddress: PRUEBAS AREA DE POS
+            application:
+              version: I193L2
+            status: APPROVED
+            authorizationCode: 165066 B
+            buyOrder: '00000000000000000000000000'
+            cardBrand: V
+            cardNumber: '6590'
+            change: 0
+            checkingAccountNumber: '4051886000056590'
+            currencyCode: 152
+            employeeCode: ' '
+            entryMode: 21
+            establishment:
+              businessName: ZENIT SEGUROS GENERALES S.A
+              connectionType: POS
+              rut: '760612235'
+              fantasyName: TEST NORMAL SOLO C2C )
+            installment:
+              type: VTN
+              number: 0
+            invoiceNumber: '0000'
+            messageType: 210
+            operationNumber: 180
+            paymentMethod: C
+            productAmount: 155
+            retailerId: '597029414300'
+            surcharge: false
+            terminal:
+              id: IT750150
+              serialNumber: '161416243491'
+            tipAmount: 0
+            amount: 155
+            subtype: '10'
+            voucherType: '0'
+            id: 659045
+            date: 22-05-24T14:58:32
+            brandCode: TB
+          - address:
+              city: SANTIAGO
+              comuna: VITACURA
+              country: CL
+              fullAddress: PRUEBAS AREA DE POS
+            application:
+              version: V193L6
+            status: APPROVED
+            authorizationCode: 392512 B
+            buyOrder: '00000000000000000000000000'
+            cardBrand: M
+            cardNumber: '9480'
+            change: 0
+            checkingAccountNumber: '4051886000056590'
+            currencyCode: 152
+            employeeCode: ' '
+            entryMode: 21
+            establishment:
+              businessName: ZENIT SEGUROS GENERALES S.A
+              connectionType: POS
+              rut: '760612235'
+              fantasyName: TEST NORMAL SOLO C2C )
+            installment:
+              type: VTN
+              number: 0
+            invoiceNumber: '0000'
+            messageType: 210
+            operationNumber: 7
+            paymentMethod: C
+            productAmount: 469980
+            retailerId: '597029414300'
+            surcharge: false
+            terminal:
+              id: '75001549'
+              serialNumber: '331-352-712 '
+            tipAmount: 0
+            amount: 469980
+            subtype: '10'
+            voucherType: '0'
+            id: 659029
+            date: 22-05-24T14:35:09
+            brandCode: TB
+          - address:
+              city: SANTIAGO
+              comuna: VITACURA
+              country: CL
+              fullAddress: PRUEBAS AREA DE POS
+            application:
+              version: V193L6
+            status: APPROVED
+            authorizationCode: 910400 B
+            buyOrder: '00000000000000000000000000'
+            cardBrand: V
+            cardNumber: '8652'
+            change: 0
+            checkingAccountNumber: ' '
+            currencyCode: 152
+            employeeCode: ' '
+            entryMode: 71
+            establishment:
+              businessName: ZENIT SEGUROS GENERALES S.A
+              connectionType: POS
+              rut: '760612235'
+              fantasyName: TEST NORMAL SOLO C2C )
+            installment:
+              type: VTN
+              number: 0
+            invoiceNumber: '0000'
+            messageType: 210
+            operationNumber: 20
+            paymentMethod: C
+            productAmount: 476
+            retailerId: '597029414300'
+            surcharge: false
+            terminal:
+              id: '75001595'
+              serialNumber: '332-175-062 '
+            tipAmount: 0
+            amount: 476
+            subtype: '10'
+            voucherType: '0'
+            id: 658982
+            date: 22-05-24T13:25:22
+          - address:
+              city: SANTIAGO
+              comuna: VITACURA
+              country: CL
+              fullAddress: PRUEBAS AREA DE POS
+            application:
+              version: V193L6
+            status: APPROVED
+            authorizationCode: 450944 B
+            buyOrder: '00000000000000000000000000'
+            cardBrand: V
+            cardNumber: '8652'
+            change: 0
+            checkingAccountNumber: ' '
+            currencyCode: 152
+            employeeCode: ' '
+            entryMode: 71
+            establishment:
+              businessName: ZENIT SEGUROS GENERALES S.A
+              connectionType: POS
+              rut: '760612235'
+              fantasyName: TEST NORMAL SOLO C2C )
+            installment:
+              type: VTN
+              number: 0
+            invoiceNumber: '0000'
+            messageType: 210
+            operationNumber: 19
+            paymentMethod: C
+            productAmount: 476
+            retailerId: '597029414300'
+            surcharge: false
+            terminal:
+              id: '75001595'
+              serialNumber: '332-175-062 '
+            tipAmount: 0
+            amount: 476
+            subtype: '10'
+            voucherType: '0'
+            id: 658981
+            date: 22-05-24T13:13:09
+          - address:
+              city: SANTIAGO
+              comuna: VITACURA
+              country: CL
+              fullAddress: PRUEBAS AREA DE POS
+            application:
+              version: V193L6
+            status: APPROVED
+            authorizationCode: 545343 B
+            buyOrder: '00000000000000000000000000'
+            cardBrand: V
+            cardNumber: '8652'
+            change: 0
+            checkingAccountNumber: ' '
+            currencyCode: 152
+            employeeCode: ' '
+            entryMode: 71
+            establishment:
+              businessName: ZENIT SEGUROS GENERALES S.A
+              connectionType: POS
+              rut: '760612235'
+              fantasyName: TEST NORMAL SOLO C2C )
+            installment:
+              type: VTN
+              number: 0
+            invoiceNumber: '0000'
+            messageType: 210
+            operationNumber: 18
+            paymentMethod: C
+            productAmount: 476
+            retailerId: '597029414300'
+            surcharge: false
+            terminal:
+              id: '75001595'
+              serialNumber: '332-175-062 '
+            tipAmount: 0
+            amount: 476
+            subtype: '10'
+            voucherType: '0'
+            id: 658973
+            date: 22-05-24T12:58:59
+          - address:
+              city: SANTIAGO
+              comuna: VITACURA
+              country: CL
+              fullAddress: PRUEBAS AREA DE POS
+            application:
+              version: V193L6
+            status: APPROVED
+            authorizationCode: 938416 B
+            buyOrder: '00000000000000000000000000'
+            cardBrand: M
+            cardNumber: '9480'
+            change: 0
+            checkingAccountNumber: '4051886000056590'
+            currencyCode: 152
+            employeeCode: ' '
+            entryMode: 21
+            establishment:
+              businessName: ZENIT SEGUROS GENERALES S.A
+              connectionType: POS
+              rut: '760612235'
+              fantasyName: TEST NORMAL SOLO C2C )
+            installment:
+              type: C3C
+              number: 3
+            installmentsInfo:
+              amount:
+                - 43156
+                - 43156
+                - 43158
+              number:
+                - 1
+                - 2
+                - 3
+            invoiceNumber: '0000'
+            messageType: 210
+            operationNumber: 6
+            paymentMethod: C
+            productAmount: 129470
+            retailerId: '597029414300'
+            surcharge: false
+            terminal:
+              id: '75001549'
+              serialNumber: '331-352-712 '
+            tipAmount: 0
+            amount: 129470
+            subtype: '10'
+            voucherType: '0'
+            id: 658967
+            date: 22-05-24T12:55:04
+            brandCode: TB
+          - address:
+              city: SANTIAGO
+              comuna: VITACURA
+              country: CL
+              fullAddress: PRUEBAS AREA DE POS
+            application:
+              version: V181L1
+            status: APPROVED
+            authorizationCode: 324032 B
+            buyOrder: '00000000000000000000000000'
+            cardBrand: NONE
+            cardNumber: '8881'
+            change: 0
+            checkingAccountNumber: ' '
+            currencyCode: 152
+            employeeCode: ' '
+            entryMode: 21
+            establishment:
+              businessName: ZENIT SEGUROS GENERALES S.A
+              connectionType: POS
+              rut: '760612235'
+              fantasyName: TEST NORMAL SOLO C2C )
+            installment:
+              type: VTN
+              number: 0
+            invoiceNumber: '0000'
+            messageType: 210
+            operationNumber: 738
+            paymentMethod: D
+            productAmount: 50
+            retailerId: '597029414300'
+            surcharge: false
+            terminal:
+              id: '75001091'
+              serialNumber: '331-839-481 '
+            tipAmount: 0
+            amount: 50
+            subtype: '10'
+            voucherType: '0'
+            id: 658964
+            date: 22-05-24T12:53:08
+            brandCode: TB
+          - address:
+              city: SANTIAGO
+              comuna: VITACURA
+              country: CL
+              fullAddress: PRUEBAS AREA DE POS
+            application:
+              version: V193L6
+            status: APPROVED
+            authorizationCode: 707275 B
+            buyOrder: '00000000000000000000000000'
+            cardBrand: V
+            cardNumber: '8652'
+            change: 0
+            checkingAccountNumber: ' '
+            currencyCode: 152
+            employeeCode: ' '
+            entryMode: 71
+            establishment:
+              businessName: ZENIT SEGUROS GENERALES S.A
+              connectionType: POS
+              rut: '760612235'
+              fantasyName: TEST NORMAL SOLO C2C )
+            installment:
+              type: VTN
+              number: 0
+            invoiceNumber: '0000'
+            messageType: 210
+            operationNumber: 17
+            paymentMethod: C
+            productAmount: 166618
+            retailerId: '597029414300'
+            surcharge: false
+            terminal:
+              id: '75001595'
+              serialNumber: '332-175-062 '
+            tipAmount: 0
+            amount: 166618
+            subtype: '10'
+            voucherType: '0'
+            id: 658950
+            date: 22-05-24T12:43:35
+          - address:
+              city: SANTIAGO
+              comuna: VITACURA
+              country: CL
+              fullAddress: PRUEBAS AREA DE POS
+            application:
+              version: V193L6
+            status: REJECTED
+            authorizationCode: ' '
+            buyOrder: '00000000000000000000000000'
+            cardBrand: V
+            cardNumber: '6590'
+            change: 0
+            checkingAccountNumber: ' '
+            currencyCode: 152
+            employeeCode: ' '
+            entryMode: 21
+            establishment:
+              businessName: ZENIT SEGUROS GENERALES S.A
+              connectionType: POS
+              rut: '760612235'
+              fantasyName: TEST NORMAL SOLO C2C )
+            installment:
+              type: VTN
+              number: 0
+            invoiceNumber: '0000'
+            messageType: 210
+            operationNumber: 27
+            paymentMethod: C
+            productAmount: 3050
+            retailerId: '597029414300'
+            surcharge: false
+            terminal:
+              id: '75001600'
+              serialNumber: '332-747-006 '
+            tipAmount: 0
+            amount: 3050
+            subtype: '10'
+            voucherType: '0'
+            id: 658939
+            date: 22-05-24T12:12:24
+            brandCode: TB
+        meta:
+          _msgId: e83f2936-3a8c-4d95-9d61-38b24f0701f4
+          _version: 0.0.4
+          _rqDateTime: 2018-02-10T09:30Z
+          _clientId: 038901-1
+          _transactionId: ba440c87-80cf-4d74-8bc1-0da3f6e93199
+          _rsLength: 66
+          _totalTransactions: 689
+        pagination:
+          page: 17
+          size: 31
+    FiltersOnlineTransactions:
+      description: >-
+        Filtros sobre la información detallada de las transacciones en línea que
+        se desea consultar.
+      type: object
+      properties:
+        applicationId:
+          description: >-
+            Identificación de la aplicación que realizo las transacciones, sobre
+            la cual se quiere filtrar. 
+          type: string
+        authorizationCode:
+          description: >-
+            Código alfanumérico de autorización de la transacción, debe ser
+            máximo de 8 caracteres
+          maxLength: 8
+          minLength: 1
+          type: string
+        currency:
+          description: >-
+            Moneda de la transacción representado en código ISO 4217 en código
+            alfabético . Debe ser exactamente de 3 caracteres. Por defecto
+            tendrá el valor 'CLP'
+          maxLength: 3
+          minLength: 3
+          enum:
+            - CLP
+            - USD
+          type: string
+          example: CLP
+        employeeCode:
+          description: >-
+            Código alfanumérico que representa el empleado, debe ser máximo de 6
+            caracteres.
+          maxLength: 6
+          minLength: 1
+          type: string
+        fromAmount:
+          description: >-
+            Monto mínimo de las transacciones que se desea consultar, deberá ser
+            un valor numérico superior a **0**
+          type: number
+          example: '4235'
+        fromChange:
+          description: >-
+            Valor de cambio mínimo de las transacciones que se desea consultar,
+            deberá ser un valor numérico superior a **0**
+          type: number
+          example: '1920'
+        fromDate:
+          format: date-time
+          description: >-
+            Fecha desde sobre la cual se va a realizar la consulta de las
+            transacciones, deberá cumplir con el formato ISO 8601
+            **yyyy-MM-ddTHH:mm:ss** o **yyyy-MM-dd**, su valor debe ser menor o
+            igual a la fecha actual.
+          type: string
+        getCount:
+          description: >-
+            Identificación con el objetivo de que pueda ser recibida la cuenta
+            de la transacción
+          type: boolean
+          example: 'false'
+        typeHrc:
+          description: >-
+            Identificación con la cual se definirá si se buscara las
+            transacciones de Hotel y Rent a car o solo transacciones en línea,
+            si es valor es True se obtendrá transacciones de Hotel y Rent a car,
+            si es false o no se envía serán solo transacciones en línea
+          type: boolean
+          example: 'false'
+        messageType:
+          description: Tipo de mensaje de la transacción
+          type: integer
+        paymentMethod:
+          description: Método de pago de las transacciones por el cual se desea filtrar
+          enum:
+            - DEBIT
+            - CREDIT
+            - PREPAID
+          type: string
+          example: DEBIT
+        saleType:
+          description: Tipo de venta de las transacciones que se desea consultar
+          enum:
+            - AUTHORIZATION
+            - NULLIFY
+          type: string
+          example: NULLIFY
+        toAmount:
+          description: >-
+            Monto máximo de las transacciones que se desea consultar, deberá ser
+            un valor numérico superior a **0**. Si se indica algún valor en el
+            campo fromAmount, dicho campo (fromAmount) deberá ser menor al valor
+            indicado en este campo (toAmount).
+          type: number
+          example: '5520'
+        toChange:
+          description: >-
+            Valor de cambio mínimo de las transacciones que se desea consultar,
+            deberá ser un valor numérico superior a **0**. Si se indica algún
+            valor en el campo fromChange, dicho campo(fromChange) deberá ser
+            menor al valor indicado en este campo(toChange)
+          type: number
+          example: '1980'
+        toDate:
+          format: date-time
+          description: >-
+            Fecha hasta sobre la cual se va a realizar la consulta de las
+            transacciones, deberá cumplir con el formato ISO 8601
+            **yyyy-MM-ddTHH:mm:ss** o **yyyy-MM-dd** además de ser menor o igual
+            a la fecha actual. Si se indica algún valor en el campo fromDate,
+            dicho campo (fromDate) deberá ser menor al valor indicado en el
+            campo toDate.
+          type: string
+        voucherType:
+          description: Tipo de factura de la transacción sobre la cual se desea filtrar
+          enum:
+            - NEITHER
+            - RECEIPT
+            - EXEMPT
+            - INVOICE
+          type: string
+          example: INVOICE
+        status:
+          description: >-
+            Identificador del estado de la transacción por el cual se desea
+            filtrar
+          enum:
+            - REJECTED
+            - APPROVED
+          type: string
+          example: APPROVED
+        commerceCodes:
+          description: >-
+            Lista de los códigos de los comercios sobre los cuales se desea
+            consultar, cada código debe ser un dato alfanumérico de no más de 19
+            caracteres
+          type: array
+          items:
+            type: string
+        id:
+          description: Identificador de la transacción que se desea consultar.
+          maximum: 99999999
+          minimum: 1
+          type: integer
+          example: '1291910'
+        rut:
+          description: Identificación de la organización
+          type: string
+        saleTid:
+          description: Identificación de la venta
+          type: string
+        cardNumber:
+          description: Número de la tarjeta con la que se realizó la transacción
+          type: string
+        brandCode:
+          description: Código de representación de la marca de la tarjeta
+          enum:
+            - VI
+            - MG
+            - AX
+            - TBK
+          type: string
+        connectionType:
+          description: Tipo de conexión de la transacción
+          type: string
+      example:
+        applicationId: APPCOMERCE
+        authorizationCode: SHAGDA
+        currency: CLP
+        employeeCode: '103629345'
+        fromAmount: 34.16
+        fromChange: 67.86
+        fromDate: '2022-02-10T09:30:45.000Z'
+        getCount: true
+        typeHrc: true
+        messageType: 7
+        paymentMethod: DEBIT
+        saleType: NULLIFY
+        toAmount: 63.12
+        toChange: 66.53
+        toDate: '2022-04-10T09:30:45.000Z'
+        voucherType: RECEIPT
+        status: APPROVED
+        commerceCodes:
+          - '3091745015'
+          - '481261047'
+        id: 813741
+        rut: 937103-0
+        saleTid: 238204839
+        cardNumber: '9364017402734018403'
+        brandCode: MG
+        pageNumber: 22
+        pageSize: 87
+        connectionType: c
+    TotalTransactions:
+      description: ''
+      type: object
+      properties:
+        total:
+          description: Suma del monto total de las transacciones en linea.
+          type: number
+          example: 2302.1
+  securitySchemes:
+    APIKey:
+      type: apiKey
+      description: Identificador generado para identificar de la aplicación del cliente
+      name: API-Key
+      in: header
+      x-key-type: client_id
+security:
+  - APIKey: []
+tags:
+  - name: OnlineTransactions
+    description: ''
+x-ibm-configuration:
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  gateway: datapower-api-gateway
+  cors:
+    enabled: true
+  assembly:
+    execute:
+      - gatewayscript:
+          version: 2.0.0
+          title: isMock
+          source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript el cual definira si la solicitud\r\n*                se enviara a ambiente mock\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n*\r\n* @version: 2022/05/09\r\n* @desc:  version inicial\r\n*/\r\n\r\nconsole.info(\"Inicio de isMock\");\r\n/*\r\n* Lectura de variables necesarias\r\n*/\r\ncontext.set('ctx.mock',0);\r\nlet isMock = context.request.header.get('X-Mock');\r\nconsole.info(`Valor de mock enviado %s`,isMock);\r\n\r\n/*\r\n* mapeo variable para ir a MOCK\r\n*/\r\nif(isMock || isMock != undefined ){\r\n    context.set('ctx.mock',1);\r\n}"
+      - gatewayscript:
+          version: 2.0.0
+          title: decipherBody
+          source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript para el decifrado de mensaje  \r\n*                 con JWE A256GCM en formato COMPACT\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n* @version: 2022/05/09\r\n* @desc:  version inicial\r\n*/\r\n\r\n/**\r\n * Importación de módulos necesarios\r\n */\r\nvar jose = require('jose'); \r\nconst deafultErrorMessage = \"Invalid Parameter: Validation Failure\";\r\n\r\nconsole.info(\"Inicio de decipherBody\");\r\n/**\r\n * Construcción de la llave privada que se va usar para el descifrado\r\n */\r\nlet key = context.get('api.properties.namePrivateKey');\r\n\r\n/**\r\n * Obtencion de la información a descifrar\r\n */\r\ncontext.request.body.readAsBuffer(function(error, buffer) {\r\n    if (error) {\r\n        console.log(\"Error obteniendo el mensaje\");\r\n        const errors = [{\r\n            \"status\": 400,\r\n            \"title\": \"Data invalida\",\r\n            \"detail\": \"El objeto data entregado no es valido\"\r\n        }];\r\n\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ParametersException\",deafultErrorMessage);\r\n    }\r\n    const body =  JSON.parse(buffer.toString());\r\n    const compact_serialization = body.data;\r\n    console.info(\"Se obtiene el cuerpo de la solicitud \");\r\n\r\n    /**\r\n     * Modificacion variables de descifrado\r\n     */\r\n    const jweobj = jose.parse(compact_serialization);\r\n    jweobj.setKey(key);\r\n\r\n    /**\r\n     * Obtencion llave publica entregada para el cifrado de la respuesta\r\n     */\r\n    const jwk = jweobj.getProtected(\"app-key\");\r\n    context.set(\"cxt.key\",JSON.parse(jwk));\r\n    console.info(\"Se obtuvo la llave para cifrado de la respuesta\");\r\n\r\n    /**\r\n     * Descifrado del mensaje\r\n     */\r\n    jose.createJWEDecrypter(jweobj).decrypt(function(errorDecipher, plaintext) {\r\n        if (errorDecipher) {\r\n            console.log(\"Error decifrando el mensaje\");\r\n            const errors = [{\r\n                \"status\": 400,\r\n                \"title\": \"Data invalida\",\r\n                \"detail\": \"El objeto data entregado no es valido\"\r\n            }];\r\n\r\n            context.set(\"ctx.errorData\",errors);\r\n            context.reject(\"ParametersException\",deafultErrorMessage);\r\n        } else {\r\n            session.output.write(JSON.parse(plaintext));\r\n        }\r\n    });\r\n});\r\n\r\n\r\n"
+      - gatewayscript:
+          version: 2.0.0
+          title: validateParameter
+          source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript el cual validara todos los \r\n*                parametros ingresados\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n*\r\n* @version: 2022/05/09\r\n* @desc:  version inicial\r\n*/\r\n\r\nconst deafultErrorMessage = \"Invalid Parameter: Validation Failure\";\r\nconst now = new Date(); \r\nconst errors = [];\r\n\r\n/**\r\n * Propiedades de la API para las valdiaciones\r\n */\r\nconst charactersQuantityForCurrency = context.get(\"api.properties.charactersQuantityForCurrency\");\r\nconst charactersQuantityForAuthorizationCode = context.get(\"api.properties.charactersQuantityForAuthorizationCode\");\r\nconst charactersQuantityForEmployeeCode= context.get(\"api.properties.charactersQuantityForEmployeeCode\");\r\n\r\n\r\nconst propertieCurrencyValues = context.get(\"api.properties.currencyValues\");\r\nconst propertiePatmentMethodValues = context.get(\"api.properties.patmentMethodValues\");\r\nconst propertieVoucherTypeValues = context.get(\"api.properties.voucherTypeValues\");\r\nconst propertieStatusValues = context.get(\"api.properties.statusValues\");\r\nconst propertieSalesTypes = context.get(\"api.properties.salesType\");\r\nconst propertieBrandCode = context.get(\"api.properties.brandCode\");\r\n\r\nconst allowedStatusValues = propertieStatusValues.split(\",\");\r\nconst allowedVoucherTypeValues = propertieVoucherTypeValues.split(\",\");\r\nconst allowedCurrencyValues = propertieCurrencyValues.split(\",\");\r\nconst allowedPatmentMethodValues = propertiePatmentMethodValues.split(\",\");\r\nconst allowedSalesTypes = propertieSalesTypes.split(\",\");\r\nconst allowedBrandCodeValues = propertieBrandCode.split(\",\");\r\n\r\n/**\r\n * Se obtiene el cuerpo de la solicitud\r\n */\r\ncontext.message.body.readAsJSON(function(error, body) {\r\n    if (error) {\r\n        console.log(\"Error obteniendo el mensaje\");\r\n        const errors = [{\r\n            \"status\": 400,\r\n            \"title\": \"Data invalida\",\r\n            \"detail\": \"El objeto data entregado no es valido\"\r\n        }];\r\n\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ParametersException\",deafultErrorMessage);\r\n    }\r\n\r\n    const data =  body.data;\r\n    const pagination =  body.pagination;\r\n\r\n    console.info(\"Inicio de validateParameter\");\r\n    validation((!data || data === \"\" || Object.keys(data).length === 0) ,\r\n    { \"status\": 400,\r\n        \"title\": \"data invalido\",\r\n        \"source\": { \"pointer\" : \"data\" },\r\n        \"detail\": `El objeto data no puede estar vacio`\r\n    },true);\r\n\r\n    if(data.applicationId){\r\n\r\n        validation(!isAplhaNumericFormat(data.applicationId) ,\r\n        { \"status\": 422,\r\n            \"title\": \"applicationId invalido\",\r\n            \"source\": { \"pointer\" : \"applicationId\" },\r\n            \"detail\": `El campo applicationId contiene un valor invalido` \r\n        });\r\n        \r\n    }\r\n\r\n    if(data.authorizationCode){\r\n\r\n        validation(!isAplhaNumericFormat(data.authorizationCode) ,\r\n        { \"status\": 422,\r\n            \"title\": \"authorizationCode invalido\",\r\n            \"source\": { \"pointer\" : \"authorizationCode\" },\r\n            \"detail\": `El campo authorizationCode contiene un valor invalido` \r\n        });\r\n\r\n        validation(data.authorizationCode.length > charactersQuantityForAuthorizationCode,\r\n            { \"status\": 422,\r\n                \"title\": \"authorizationCode invalido\",\r\n                \"source\": { \"pointer\" : \"authorizationCode\" },\r\n                \"detail\": `El campo authorizationCode debe ser de ${charactersQuantityForAuthorizationCode} caracteres`\r\n            });\r\n    }\r\n\r\n    if(data.currency){\r\n\r\n        validation(data.currency.length != charactersQuantityForCurrency,\r\n                { \"status\": 422,\r\n                    \"title\": \"currency invalido\",\r\n                    \"source\": { \"pointer\" : \"currency\" },\r\n                    \"detail\": `El campo currency debe ser de ${charactersQuantityForCurrency} caracteres`\r\n                });\r\n        \r\n        validation(!allowedCurrencyValues.includes(data.currency),\r\n                    { \"status\": 422,\r\n                        \"title\": \"currency invalido\",\r\n                        \"source\": { \"pointer\" : \"currency\" },\r\n                        \"detail\": `El valor del campo currency debe ser uno de los valores permitidos` \r\n                    }); \r\n    }\r\n\r\n    if(data.employeeCode){\r\n\r\n        validation(!isAplhaNumericFormat(data.employeeCode) ,\r\n        { \"status\": 422,\r\n            \"title\": \"employeeCode invalido\",\r\n            \"source\": { \"pointer\" : \"employeeCode\" },\r\n            \"detail\": `El campo employeeCode contiene un valor invalido` \r\n        });\r\n\r\n        validation(data.employeeCode.length > charactersQuantityForEmployeeCode,\r\n            { \"status\": 422,\r\n                \"title\": \"employeeCode invalido\",\r\n                \"source\": { \"pointer\" : \"employeeCode\" },\r\n                \"detail\": `El campo employeeCode debe ser de ${charactersQuantityForEmployeeCode} caracteres`\r\n            });\r\n    }\r\n\r\n    if(data.getCount){\r\n\r\n        validation((data.getCount !== true && data.getCount !== false) ,\r\n        { \"status\": 422,\r\n            \"title\": \"getCount invalido\",\r\n            \"source\": { \"pointer\" : \"getCount\" },\r\n            \"detail\": `El campo getCount contiene un valor invalido` \r\n        });\r\n    }\r\n\r\n    if(data.typeHrc){\r\n\r\n        validation((data.typeHrc !== true && data.typeHrc !== false) ,\r\n        { \"status\": 422,\r\n            \"title\": \"typeHrc invalido\",\r\n            \"source\": { \"pointer\" : \"typeHrc\" },\r\n            \"detail\": `El campo typeHrc contiene un valor invalido` \r\n        });\r\n    }\r\n\r\n    if(data.messageType){\r\n        \r\n        validation(!isNumberFormat(data.messageType) ,\r\n                    { \"status\": 422,\r\n                        \"title\": \"messageType invalido\",\r\n                        \"source\": { \"pointer\" : \"messageType\" },\r\n                        \"detail\": `El campo messageType debe ser numerico` \r\n                    });\r\n    }\r\n\r\n    if(data.commerceCodes){\r\n        \r\n        let completeValidation = false;\r\n        data.commerceCodes.forEach(commerceCode => {\r\n            if(isAplhaNumericFormat(commerceCode) ){\r\n                completeValidation = true;\r\n            }else {\r\n                completeValidation = false;\r\n            }\r\n        });\r\n\r\n        validation(!completeValidation,\r\n            { \"status\": 422,\r\n                \"title\": \"commerceCodes invalido\",\r\n                \"source\": { \"pointer\" : \"commerceCodes\" },\r\n                \"detail\": `El campo commerceCodes contiene un valor invalido` \r\n            });\r\n    }\r\n\r\n    if(data.fromAmount){\r\n        \r\n        validation(!isNumberFormat(data.fromAmount) ,\r\n                    { \"status\": 422,\r\n                        \"title\": \"fromAmount invalido\",\r\n                        \"source\": { \"pointer\" : \"fromAmount\" },\r\n                        \"detail\": `El campo fromAmount debe ser numerico` \r\n                    });\r\n\r\n        validation(data.fromAmount <= 0 ,\r\n                    { \"status\": 422,\r\n                        \"title\": \"fromAmount invalido\",\r\n                        \"source\": { \"pointer\" : \"fromAmount\" },\r\n                        \"detail\": `El campo fromAmount debe ser superiro a cero` \r\n                    });\r\n    }\r\n\r\n    if(data.fromChange){\r\n        \r\n        validation(!isNumberFormat(data.fromChange) ,\r\n                    { \"status\": 422,\r\n                        \"title\": \"fromChange invalido\",\r\n                        \"source\": { \"pointer\" : \"fromChange\" },\r\n                        \"detail\": `El campo fromChange debe ser numerico` \r\n                    });\r\n\r\n        validation(data.fromChange <= 0 ,\r\n                    { \"status\": 422,\r\n                        \"title\": \"fromChange invalido\",\r\n                        \"source\": { \"pointer\" : \"fromChange\" },\r\n                        \"detail\": `El campo fromChange debe ser superiro a cero` \r\n                    });\r\n    }\r\n\r\n    if(data.fromDate){\r\n\r\n        validation(!isDateFormat(data.fromDate) ,\r\n                    { \"status\": 400,\r\n                        \"title\": \"fromDate invalido\",\r\n                        \"source\": { \"pointer\" : \"fromDate\" },\r\n                        \"detail\": `El campo fromDate debe estar en el formato ISO 8601 yyyy-MM-ddT:HH:mm:ss` \r\n                    }); \r\n\r\n        const date = new Date(data.fromDate);\r\n\r\n        validation((now.getTime() - date.getTime())<=0 ,\r\n                    { \"status\": 400,\r\n                        \"title\": \"fromDate invalido\",\r\n                        \"source\": { \"pointer\" : \"fromDate\" },\r\n                        \"detail\": `El campo fromDate debe ser menor o igual a la fecha actual`\r\n                    });\r\n    }\r\n\r\n    if(data.paymentMethod){\r\n\r\n        validation(!allowedPatmentMethodValues.includes(data.paymentMethod),\r\n                    { \"status\": 422,\r\n                        \"title\": \"paymentMethod invalido\",\r\n                        \"source\": { \"pointer\" : \"paymentMethod\" },\r\n                        \"detail\": `El valor del campo paymentMethod debe ser uno de los valores permitidos` \r\n                    }); \r\n    }\r\n\r\n    if(data.saleType){\r\n\r\n        validation(!allowedSalesTypes.includes(data.saleType),\r\n                    { \"status\": 422,\r\n                        \"title\": \"saleType invalido\",\r\n                        \"source\": { \"pointer\" : \"saleType\" },\r\n                        \"detail\": `El valor del campo saleType debe ser uno de los valores permitidos` \r\n                    }); \r\n    }\r\n\r\n    if(data.brandCode){\r\n\r\n        validation(!allowedBrandCodeValues.includes(data.brandCode),\r\n                    { \"status\": 422,\r\n                        \"title\": \"brandCode invalido\",\r\n                        \"source\": { \"pointer\" : \"brandCode\" },\r\n                        \"detail\": `El valor del campo brandCode debe ser uno de los valores permitidos` \r\n                    }); \r\n    }\r\n\r\n    if(data.toAmount){\r\n        \r\n        validation(!isNumberFormat(data.toAmount) ,\r\n                    { \"status\": 400,\r\n                        \"title\": \"toAmount invalido\",\r\n                        \"source\": { \"pointer\" : \"toAmount\" },\r\n                        \"detail\": `El campo toAmount debe ser numerico` \r\n                    },true);\r\n\r\n        validation(data.toAmount <= 0 ,\r\n                    { \"status\": 422,\r\n                        \"title\": \"toAmount invalido\",\r\n                        \"source\": { \"pointer\" : \"toAmount\" },\r\n                        \"detail\": `El campo toAmount debe ser superiro a cero` \r\n                    });\r\n\r\n        if(data.fromAmount){\r\n\r\n            validation(data.toAmount < data.fromAmount,\r\n                { \"status\": 422,\r\n                    \"title\": \"toAmount invalido\",\r\n                    \"source\": { \"pointer\" : \"toAmount\" },\r\n                    \"detail\": `El campo toAmount deber ser menor al fromAmount` \r\n                });\r\n        }\r\n    }\r\n\r\n    if(data.toChange){\r\n        \r\n        validation(!isNumberFormat(data.toChange) ,\r\n                    { \"status\": 400,\r\n                        \"title\": \"toChange invalido\",\r\n                        \"source\": { \"pointer\" : \"toChange\" },\r\n                        \"detail\": `El campo toChange debe ser numerico` \r\n                    },true);\r\n\r\n        validation(data.toChange <= 0 ,\r\n                    { \"status\": 422,\r\n                        \"title\": \"toChange invalido\",\r\n                        \"source\": { \"pointer\" : \"toChange\" },\r\n                        \"detail\": `El campo toChange debe ser superiro a cero` \r\n                    });\r\n\r\n        if(data.fromChange){\r\n\r\n            validation(data.toChange < data.fromChange,\r\n                { \"status\": 422,\r\n                    \"title\": \"toChange invalido\",\r\n                    \"source\": { \"pointer\" : \"toChange\" },\r\n                    \"detail\": `El campo toChange deber ser menor al fromChange` \r\n                });\r\n        }\r\n    }\r\n\r\n    if(data.toDate){\r\n\r\n        validation(!isDateFormat(data.toDate) ,\r\n                    { \"status\": 400,\r\n                        \"title\": \"toDate invalido\",\r\n                        \"source\": { \"pointer\" : \"toDate\" },\r\n                        \"detail\": `El campo toDate debe estar en el formato ISO 8601 yyyy-MM-ddT:HH:mm:ss` \r\n                    }); \r\n\r\n        const date = new Date(data.toDate);\r\n\r\n        validation((now.getTime() - date.getTime())<=0 ,\r\n                    { \"status\": 400,\r\n                        \"title\": \"toDate invalido\",\r\n                        \"source\": { \"pointer\" : \"toDate\" },\r\n                        \"detail\": `El campo toDate debe ser menor o igual a la fecha actual` \r\n                    });\r\n\r\n        if(data.fromDate){\r\n\r\n            const fromDate = new Date(data.fromDate);\r\n\r\n            validation((fromDate.getTime() - date.getTime())>=0 ,\r\n                    { \"status\": 422,\r\n                        \"title\": \"toDate invalido\",\r\n                        \"source\": { \"pointer\" : \"toDate\" },\r\n                        \"detail\": `El campo toDate debe ser mayor o igual a la fromDate` \r\n                    });\r\n        }\r\n    }\r\n\r\n    if(data.voucherType){\r\n\r\n        validation(!allowedVoucherTypeValues.includes(data.voucherType),\r\n                    { \"status\": 422,\r\n                        \"title\": \"voucherType invalido\",\r\n                        \"source\": { \"pointer\" : \"voucherType\" },\r\n                        \"detail\": `El valor del campo voucherType debe ser uno de los valores permitidos` \r\n                    }); \r\n    }\r\n\r\n    if(data.status){\r\n\r\n        validation(!allowedStatusValues.includes(data.status),\r\n                    { \"status\": 422,\r\n                        \"title\": \"status invalido\",\r\n                        \"source\": { \"pointer\" : \"status\" },\r\n                        \"detail\": `El valor del campo status debe ser uno de los valores permitidos` \r\n                    }); \r\n    }\r\n\r\n    if(data.id){\r\n\r\n        validation(!isNumberFormat(data.id),\r\n                    { \"status\": 422,\r\n                        \"title\": \"id invalido\",\r\n                        \"source\": { \"pointer\" : \"id\" },\r\n                        \"detail\": `El campo id debe ser numerico` \r\n                    }); \r\n    }\r\n\r\n    if(data.rut){\r\n\r\n        validation(!isRUTFormat(data.rut),\r\n                    { \"status\": 422,\r\n                        \"title\": \"rut invalido\",\r\n                        \"source\": { \"pointer\" : \"rut\" },\r\n                        \"detail\": `El campo rut no cumple con el formato de RUT` \r\n                    }); \r\n    }\r\n\r\n    if(data.saleTid){\r\n\r\n        validation(!isAplhaNumericFormat(data.saleTid),\r\n                    { \"status\": 422,\r\n                        \"title\": \"saleTid invalido\",\r\n                        \"source\": { \"pointer\" : \"saleTid\" },\r\n                        \"detail\": `El campo saleTid contiene un valor invalido` \r\n                    }); \r\n    }\r\n\r\n    if(data.cardNumber){\r\n\r\n        validation(!isNumberFormat(data.cardNumber),\r\n                    { \"status\": 422,\r\n                        \"title\": \"cardNumber invalido\",\r\n                        \"source\": { \"pointer\" : \"cardNumber\" },\r\n                        \"detail\": `El campo cardNumber deber ser numerico` \r\n                    }); \r\n    }\r\n\r\n    if(pagination && pagination.page){\r\n        \r\n        validation(!isNumberFormat(pagination.page) ,\r\n                    { \"status\": 400,\r\n                        \"title\": \"pageNumber invalido\",\r\n                        \"source\": { \"pointer\" : \"pageNumber\" },\r\n                        \"detail\": `El campo pageNumber debe ser numerico` \r\n                    },true);\r\n\r\n        validation(pagination.page <= 0 ,\r\n                    { \"status\": 422,\r\n                        \"title\": \"pageNumber invalido\",\r\n                        \"source\": { \"pointer\" : \"pageNumber\" },\r\n                        \"detail\": `El campo pageNumber debe ser superiro a cero` \r\n                    });\r\n    }\r\n\r\n    if(pagination && pagination.size){\r\n        \r\n        validation(!isNumberFormat(pagination.size) ,\r\n                    { \"status\": 400,\r\n                        \"title\": \"pageSize invalido\",\r\n                        \"source\": { \"pointer\" : \"pageSize\" },\r\n                        \"detail\": `El campo pageSize debe ser numerico` \r\n                    },true);\r\n\r\n        validation(pagination.size <= 0 ,\r\n                    { \"status\": 422,\r\n                        \"title\": \"pageSize invalido\",\r\n                        \"source\": { \"pointer\" : \"pageSize\" },\r\n                        \"detail\": `El campo pageSize debe ser superiro a cero` \r\n                    });\r\n    }\r\n\r\n    if(data.connectionType){\r\n\r\n        validation(!isAplhaNumericFormat(data.connectionType),\r\n                    { \"status\": 422,\r\n                        \"title\": \"connectionType invalido\",\r\n                        \"source\": { \"pointer\" : \"connectionType\" },\r\n                        \"detail\": `El campo connectionType contiene un valor invalido` \r\n                    }); \r\n    }\r\n    \r\n    if(errors.length > 0){\r\n        throwError();\r\n    }\r\n});\r\n\r\n\r\n\r\nfunction throwError(){\r\n    if(errors){\r\n        context.set(\"ctx.errorData\", errors);\r\n        context.reject(\"ParametersException\",deafultErrorMessage);\r\n    } \r\n}\r\n\r\nfunction validation(isError, errorObject, isImmediate ){\r\n    console.info(\"Verificacion del campo %s \",\r\n        errorObject.source.pointer ? errorObject.source.pointer :\"\" );               \r\n    if(isError){\r\n        console.info(\"Falla validación del campo %s \",\r\n        errorObject.source.pointer ? errorObject.source.pointer :\"\" ); \r\n        errors.push(errorObject);\r\n        if(isImmediate){\r\n            throwError();\r\n        }\r\n    }\r\n}\r\n\r\nfunction isDateFormat(dateAsString){\r\n    if(!dateAsString){\r\n        return false;\r\n    }else{\r\n        const regDateWithTime = /^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})$/g;\r\n        const regDateWithOutTime = /^(\\d{4}-\\d{2}-\\d{2})$/g;\r\n        if((!regDateWithTime.test(dateAsString)) && (!regDateWithOutTime.test(dateAsString)) ){\r\n            return false;\r\n        }\r\n    }\r\n    return true;\r\n}\r\n\r\nfunction isRUTFormat(rutAsString){\r\n    if(!rutAsString){\r\n        return false;\r\n    }else{\r\n        const reg = /^[0-9]+[-|‐]{1}[0-9kK]{1}$/;\r\n        if(!reg.test(rutAsString)){\r\n            return false;\r\n        }\r\n    }\r\n    return true;\r\n}\r\n\r\nfunction toISO(date) {\r\n    let month = '' + (date.getUTCMonth() + 1);\r\n    let day = '' + date.getUTCDate();\r\n    let year = date.getUTCFullYear();\r\n\r\n    if (month.length < 2)\r\n        month = '0' + month;\r\n    if (day.length < 2)\r\n        day = '0' + day;\r\n    return  year + \"-\" + month + \"-\" + day;\r\n}\r\n\r\nfunction isNumberFormat(number){\r\n    \r\n    let reg = /^[+]?([0-9]+(?:[\\.][0-9]*)?|\\.[0-9]+)$/;\r\n    if(reg.test(number)){\r\n        return true;\r\n    }\r\n    return false;\r\n}\r\n\r\nfunction isAplhaNumericFormat(value){\r\n    let reg = /^[a-zA-Z0-9]+$/;\r\n    if(reg.test(value)){\r\n        return true;\r\n    }\r\n    return false;\r\n}"
+      - gatewayscript:
+          version: 2.0.0
+          title: dateSeparation
+          source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript que separa la fecha para poder\r\n*                ser enviada al backend\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n* @version: 2022/05/16\r\n* @desc:  version inicial\r\n*/\r\n\r\nconsole.info(\"Inicio de dateSeparation\");\r\nconst errors = [];\r\nconst deafultErrorMessage = \"Invalid Parameter: Validation Failure\";\r\n\r\ncontext.message.body.readAsJSON(function(error, body) {\r\n    if (error) {\r\n        console.log(\"Error obteniendo el mensaje\");\r\n        const errors = [{\r\n            \"status\": 400,\r\n            \"title\": \"Data invalida\",\r\n            \"detail\": \"El objeto data entregado no es valido\"\r\n        }];\r\n\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ParametersException\",deafultErrorMessage);\r\n    }\r\n    const data =  body.data;\r\n    const fromDate = data.fromDate;\r\n    const toDate = data.toDate;\r\n\r\n    if(fromDate){\r\n        console.info(\"Separacion fromDate\");\r\n        const infoFromDate = fromDate.split(\"T\");\r\n        const newFromDate = infoFromDate[0].replace(/\\-/g,'');\r\n        if(infoFromDate[1]){\r\n            console.info(\"Separacion hora de fromDate\");\r\n            const newFromHour = infoFromDate[1].replace(/\\:/g,'');\r\n            context.set(\"ctx.fromHour\",newFromHour);\r\n            console.info(`Separación fromDate, hora: %s`,newFromHour);\r\n        }\r\n        console.info(`Separación fromDate, fecha: %s`,newFromDate);\r\n        context.set(\"ctx.fromDate\",newFromDate);\r\n    }\r\n\r\n    if(toDate){\r\n        console.info(\"Separacion toDate\");\r\n        const infoToDate = toDate.split(\"T\");\r\n        const newToDate = infoToDate[0].replace(/\\-/g,'');\r\n        if(infoToDate[1]){\r\n            console.info(\"Separacion hora de toDate\");\r\n            const newToHour = infoToDate[1].replace(/\\:/g,'');\r\n            context.set(\"ctx.toHour\",newToHour);\r\n            console.info(`Separación fromDate, hora: %s`,newToHour);\r\n        }\r\n        console.info(`Separación fromDate, fecha: %s`,newToDate);\r\n        context.set(\"ctx.toDate\",newToDate);\r\n    }\r\n});\r\n"
+      - gatewayscript:
+          version: 2.0.0
+          title: formatRut
+          source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript el cual permite formatear el RUT\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n*\r\n* @version: 2022/05/19\r\n* @desc:  version inicial\r\n*/\r\nconst errors = [];\r\nconst deafultErrorMessage = \"Invalid Parameter: Validation Failure\";\r\n\r\ncontext.message.body.readAsJSON(function(error, body) {\r\n    if (error) {\r\n        console.log(\"Error obteniendo el mensaje\");\r\n        const errors = [{\r\n            \"status\": 400,\r\n            \"title\": \"Data invalida\",\r\n            \"detail\": \"El objeto data entregado no es valido\"\r\n        }];\r\n\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ParametersException\",deafultErrorMessage);\r\n    }\r\n    const data = body.data;\r\n    console.info(\"Inicio de formatRut\");\r\n\r\n    if(data.rut){\r\n        console.info(\"Se formate el RUT\");\r\n        context.set(\"ctx.rut\",data.rut.replace(\"-\",\"\"));\r\n    }\r\n});"
+      - gatewayscript:
+          version: 2.0.0
+          title: isHRC
+          source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript el cual validara si la peticion \r\n*                es de Hotel y Rent a Car para dirigirlo a dicha\r\n*                operación del nativo\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n*\r\n* @version: 2022/05/19\r\n* @desc:  version inicial\r\n*/\r\nconst errors = [];\r\nconst deafultErrorMessage = \"Invalid Parameter: Validation Failure\";\r\n\r\ncontext.message.body.readAsJSON(function(error, body) {\r\n    if (error) {\r\n        console.log(\"Error obteniendo el mensaje\");\r\n        const errors = [{\r\n            \"status\": 400,\r\n            \"title\": \"Data invalida\",\r\n            \"detail\": \"El objeto data entregado no es valido\"\r\n        }];\r\n\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ParametersException\",deafultErrorMessage);\r\n    }\r\n    const data = body.data;\r\n    console.info(\"Inicio de isHRC\");\r\n\r\n    if(data.typeHrc){\r\n        console.info(\"La solicitud es tipo HRC\");\r\n        context.set(\"ctx.typeHrc\",1);\r\n    }else{\r\n        console.info(\"La solicitud no es tipo HRC\");\r\n        context.set(\"ctx.typeHrc\",0);\r\n    }\r\n});"
+      - switch:
+          version: 2.0.0
+          title: switch
+          case:
+            - condition: >-
+                ($operationPath() = '/online-transactions/totalize' and
+                $httpVerb() = 'POST')
+              execute:
+                - map:
+                    version: 2.1.0
+                    title: mapRequest
+                    inputs:
+                      body:
+                        schema:
+                          $ref: '#/components/schemas/OnlineTransactionsRq'
+                        variable: message.body
+                        content: application/json
+                      ctx.fromDate:
+                        schema:
+                          type: string
+                        variable: ctx.fromDate
+                      ctx.fromHour:
+                        schema:
+                          type: string
+                        variable: ctx.fromHour
+                      ctx.toDate:
+                        schema:
+                          type: string
+                        variable: ctx.toDate
+                      ctx.toHour:
+                        schema:
+                          type: string
+                        variable: ctx.toHour
+                      ctx.rut:
+                        schema:
+                          type: string
+                        variable: ctx.rut
+                    outputs:
+                      output:
+                        schema:
+                          description: ''
+                          type: object
+                          properties:
+                            applicationId:
+                              type: string
+                              name: applicationId
+                            approvedStatus:
+                              type: string
+                              name: approvedStatus
+                            authorizationCode:
+                              type: string
+                              name: authorizationCode
+                            connectionType:
+                              type: string
+                              name: connectionType
+                            currency:
+                              type: string
+                              name: currency
+                            employeeCode:
+                              type: string
+                              name: employeeCode
+                            fromAmount:
+                              type: number
+                              name: fromAmount
+                            fromChange:
+                              type: number
+                              name: fromChange
+                            fromDate:
+                              type: string
+                              name: fromDate
+                            fromHour:
+                              type: string
+                              name: fromHour
+                            getCount:
+                              type: boolean
+                              name: getCount
+                            typeHrc:
+                              type: boolean
+                              name: typeHrc
+                            localCodes:
+                              type: array
+                              items:
+                                type: string
+                              name: localCodes
+                            messageType:
+                              type: number
+                              name: messageType
+                            page:
+                              type: number
+                              name: page
+                            pageSize:
+                              type: number
+                              name: pageSize
+                            paymentMethod:
+                              type: string
+                              name: paymentMethod
+                            rut:
+                              type: string
+                              name: rut
+                            saleType:
+                              type: string
+                              name: saleType
+                            toAmount:
+                              type: number
+                              name: toAmount
+                            toChange:
+                              type: number
+                              name: toChange
+                            toDate:
+                              type: string
+                              name: toDate
+                            toHour:
+                              type: string
+                              name: toHour
+                            transactionId:
+                              type: number
+                              name: transactionId
+                            voucherType:
+                              type: string
+                              name: voucherType
+                            cardNumber:
+                              type: string
+                              name: cardNumber
+                            brandCode:
+                              type: string
+                              name: brandCode
+                            saleTid:
+                              type: string
+                              name: saleTid
+                          example: >-
+                            {"applicationId":"string","approvedStatus":"REJECTED","authorizationCode":"string","connectionType":"string","currency":"CLP","employeeCode":"string","fromAmount":0,"fromChange":0,"fromDate":"yyyyMMdd","fromHour":"HHmmss","getCount":true,"typeHrc":true,"localCodes":["string"],"messageType":0,"page":0,"pageSize":0,"paymentMethod":"DEBIT","rut":"string","saleType":"AUTHORIZATION","toAmount":0,"toChange":0,"toDate":"yyyyMMdd","toHour":"HHmmss","transactionId":0,"voucherType":"NEITHER","cardNumber":"9364017402734018403","brandCode":"MG","saleTid":"0238204839"}
+                        variable: message.body
+                        content: application/json
+                      ctx.pageNumber:
+                        schema:
+                          type: integer
+                          format: int32
+                        variable: ctx.pageNumber
+                      ctx.pageSize:
+                        schema:
+                          type: integer
+                          format: int32
+                        variable: ctx.pageSize
+                    actions:
+                      - set: output.applicationId
+                        from: body.data.applicationId
+                      - set: output.authorizationCode
+                        from: body.data.authorizationCode
+                      - set: output.currency
+                        from: body.data.currency
+                      - set: output.employeeCode
+                        from: body.data.employeeCode
+                      - set: output.fromAmount
+                        from: body.data.fromAmount
+                      - set: output.fromChange
+                        from: body.data.fromChange
+                      - set: output.getCount
+                        from: body.data.getCount
+                      - set: output.typeHrc
+                        from: body.data.typeHrc
+                      - set: output.localCodes
+                        from: body.data.commerceCodes
+                      - set: output.messageType
+                        from: body.data.messageType
+                      - set: output.paymentMethod
+                        from: body.data.paymentMethod
+                      - set: output.toAmount
+                        from: body.data.toAmount
+                      - set: output.toChange
+                        from: body.data.toChange
+                      - set: output.transactionId
+                        from: body.data.id
+                      - set: output.voucherType
+                        from: body.data.voucherType
+                      - set: output.cardNumber
+                        from: body.data.cardNumber
+                      - set: output.brandCode
+                        from: body.data.brandCode
+                      - set: output.saleTid
+                        from: body.data.saleTid
+                      - set: output.saleType
+                        from: body.data.saleType
+                      - set: output.connectionType
+                        from: body.data.connectionType
+                      - set: output.approvedStatus
+                        from: body.data.status
+                      - set: output.page
+                        from: body.pagination.page
+                      - set: output.pageSize
+                        from: body.pagination.size
+                      - set: output.toDate
+                        from: ctx\.toDate
+                      - set: output.toHour
+                        from: ctx\.toHour
+                      - set: output.fromDate
+                        from: ctx\.fromDate
+                      - set: output.fromHour
+                        from: ctx\.fromHour
+                      - set: ctx\.pageNumber
+                        from: body.pagination.page
+                      - set: ctx\.pageSize
+                        from: body.pagination.size
+                      - set: output.rut
+                        from: ctx\.rut
+                    options:
+                      mapEmulateV4EmptyJSONObject: false
+                      mapEmulateV4DefaultRequiredProps: false
+                      mapEnablePostProcessingJSON: false
+                      mapReferenceLimit: 1
+                      messagesInputData: warn
+                - switch:
+                    version: 2.0.0
+                    title: switch
+                    case:
+                      - condition: (ctx.mock=1)
+                        execute:
+                          - invoke:
+                              version: 2.2.0
+                              title: invoke
+                              backend-type: detect
+                              header-control:
+                                type: blocklist
+                                values: []
+                              parameter-control:
+                                type: blocklist
+                                values: []
+                              http-version: HTTP/1.1
+                              timeout: 60
+                              verb: keep
+                              persistent-connection: true
+                              cache-response: protocol
+                              cache-ttl: 900
+                              graphql-send-type: detect
+                              target-url: $(target-url-transaccionenlinea-total-mock)
+                              chunked-uploads: true
+                              websocket-upgrade: false
+                      - otherwise:
+                          - invoke:
+                              version: 2.2.0
+                              title: invoke
+                              backend-type: detect
+                              header-control:
+                                type: blocklist
+                                values: []
+                              parameter-control:
+                                type: blocklist
+                                values: []
+                              http-version: HTTP/1.1
+                              timeout: 60
+                              verb: keep
+                              chunked-uploads: true
+                              persistent-connection: true
+                              cache-response: protocol
+                              cache-ttl: 900
+                              graphql-send-type: detect
+                              websocket-upgrade: false
+                              target-url: $(target-url-transaccionenlinea-total)
+                - gatewayscript:
+                    version: 2.0.0
+                    title: validateResponse
+                    source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript que permite validar la respuesta \r\n*                entregada por el backend\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n* @version: 2022/05/09\r\n* @desc:  version inicial\r\n*/\r\nconst deafultErrorMessage = \"Service unavailable\";\r\nconst errors = [];\r\n\r\nconst statusCode = context.get(\"message.status.code\");\r\n\r\nconsole.info(\"Inicio de validateResponse\");\r\n\r\nconsole.info(`Status code de respuesta: %s`,statusCode);\r\n\r\nconst body = context.get(\"message.body\");\r\n\r\nif( statusCode != 200){\r\n\r\n    context.message.body.readAsJSON(function(error, body) {\r\n        if (error) {\r\n            console.log(\"Error obteniendo la respuesta\");\r\n            const errors = [{\r\n                \"status\": 503,\r\n                \"title\": \"Respuesta invalida\",\r\n                \"detail\": \"El objeto de la respuesta es invalida\"\r\n            }];\r\n    \r\n            context.set(\"ctx.errorData\",errors);\r\n            context.reject(\"ResponseException\",deafultErrorMessage);\r\n        }\r\n        console.info(`Objeto de la respuesta: `, JSON.stringify(body));\r\n\r\n        const errors = [{\r\n            \"status\": statusCode,\r\n            \"title\": \"Servicio interno no disponible\",\r\n            \"detail\": body.description\r\n        }];\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ResponseException\",deafultErrorMessage);\r\n    });\r\n}\r\n\r\n    "
+                - map:
+                    version: 2.1.0
+                    title: mapResponse
+                    inputs:
+                      input:
+                        schema:
+                          description: ''
+                          type: object
+                          properties:
+                            code:
+                              type: number
+                              name: code
+                            description:
+                              type: string
+                              name: description
+                            total:
+                              type: number
+                              name: total
+                            totalTransactions:
+                              type: number
+                              name: totalTransactions
+                          example: >-
+                            {"code":0,"description":"string","total":45000,"totalTransactions":10}
+                        variable: message.body
+                    outputs:
+                      response:
+                        schema:
+                          $ref: '#/components/schemas/TotalOnlineTransactionsRs'
+                        variable: message.body
+                        content: application/json
+                    actions:
+                      - set: response.data.total
+                        from: input.total
+                      - set: response.meta._version
+                        value: context.get('api.version')
+                      - set: response.meta._rqDateTime
+                        value: context.get('system.datetime')
+                      - set: response.meta._clientId
+                        value: context.get('client.org.name').toUpperCase()
+                      - set: response.meta._transactionId
+                        value: context.get('session.transactionID')
+                      - set: response.meta._msgId
+                        value: context.get('session.globalTransactionID')
+                      - set: response.meta._totalTransactions
+                        from: input.totalTransactions
+                    options:
+                      mapEmulateV4EmptyJSONObject: false
+                      mapEmulateV4DefaultRequiredProps: false
+                      mapEnablePostProcessingJSON: false
+                      mapReferenceLimit: 1
+                      messagesInputData: warn
+            - condition: >-
+                ($operationPath() = '/online-transactions' and $httpVerb() =
+                'POST' and ctx.typeHrc=1)
+              execute:
+                - gatewayscript:
+                    version: 2.0.0
+                    title: validateParameters
+                    source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript el cual validara los parametros\r\n*                obligatorios para la operación\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n*\r\n* @version: 2022/05/09\r\n* @desc:  version inicial\r\n*/\r\n\r\nconst deafultErrorMessage = \"Invalid Parameter: Validation Failure\";\r\nconst errors = [];\r\n\r\nconsole.info(\"Inicio de validateParameter\");\r\n\r\ncontext.message.body.readAsJSON(function(error, body) {\r\n    if (error) {\r\n        console.log(\"Error obteniendo el mensaje\");\r\n        const errors = [{\r\n            \"status\": 400,\r\n            \"title\": \"Data invalida\",\r\n            \"detail\": \"El objeto data entregado no es valido\"\r\n        }];\r\n\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ParametersException\",deafultErrorMessage);\r\n    }\r\n    const pagination =  body.pagination;\r\n\r\n    validation(!pagination,\r\n        { \"status\": 400,\r\n            \"title\": \"pagination invalido\",\r\n            \"source\": { \"pointer\" : \"pagination\" },\r\n            \"detail\": `El campo pagination es obligatorio` \r\n        },true); \r\n\r\n    validation(!pagination.size,\r\n        { \"status\": 400,\r\n            \"title\": \"pageSize invalido\",\r\n            \"source\": { \"pointer\" : \"pageSize\" },\r\n            \"detail\": `El campo pageSize es obligatorio` \r\n        }); \r\n\r\nvalidation(!pagination.page,\r\n        { \"status\": 400,\r\n            \"title\": \"pageNumber invalido\",\r\n            \"source\": { \"pointer\" : \"pageNumber\" },\r\n            \"detail\": `El campo pageNumber es obligatorio` \r\n        }); \r\n        \r\n        \r\nif(errors.length > 0){\r\n    throwError();\r\n}\r\n\r\n});\r\n\r\n\r\nfunction throwError(){\r\n    if(errors){\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ParametersException\",deafultErrorMessage);\r\n    } \r\n}\r\n\r\nfunction validation(isError, errorObject, isImmediate ){\r\n    console.info(\"Verificacion del campo %s \",\r\n        errorObject.source.pointer ? errorObject.source.pointer :\"\" );               \r\n    if(isError){\r\n        console.info(\"Falla validación del campo %s \",\r\n        errorObject.source.pointer ? errorObject.source.pointer :\"\" ); \r\n        errors.push(errorObject);\r\n        if(isImmediate){\r\n            throwError();\r\n        }\r\n    }\r\n}"
+                - map:
+                    version: 2.1.0
+                    title: mapRequest
+                    inputs:
+                      body:
+                        schema:
+                          $ref: '#/components/schemas/OnlineTransactionsRq'
+                        variable: message.body
+                        content: application/json
+                      ctx.fromDate:
+                        schema:
+                          type: string
+                        variable: ctx.fromDate
+                      ctx.fromHour:
+                        schema:
+                          type: string
+                        variable: ctx.fromHour
+                      ctx.toDate:
+                        schema:
+                          type: string
+                        variable: ctx.toDate
+                      ctx.toHour:
+                        schema:
+                          type: string
+                        variable: ctx.toHour
+                      ctx.rut:
+                        schema:
+                          type: string
+                        variable: ctx.rut
+                    outputs:
+                      output:
+                        schema:
+                          description: ''
+                          type: object
+                          properties:
+                            applicationId:
+                              type: string
+                              name: applicationId
+                            approvedStatus:
+                              type: string
+                              name: approvedStatus
+                            authorizationCode:
+                              type: string
+                              name: authorizationCode
+                            connectionType:
+                              type: string
+                              name: connectionType
+                            currency:
+                              type: string
+                              name: currency
+                            employeeCode:
+                              type: string
+                              name: employeeCode
+                            fromAmount:
+                              type: number
+                              name: fromAmount
+                            fromChange:
+                              type: number
+                              name: fromChange
+                            fromDate:
+                              type: string
+                              name: fromDate
+                            fromHour:
+                              type: string
+                              name: fromHour
+                            getCount:
+                              type: boolean
+                              name: getCount
+                            typeHrc:
+                              type: boolean
+                              name: typeHrc
+                            localCodes:
+                              type: array
+                              items:
+                                type: string
+                              name: localCodes
+                            messageType:
+                              type: number
+                              name: messageType
+                            page:
+                              type: number
+                              name: page
+                            pageSize:
+                              type: number
+                              name: pageSize
+                            paymentMethod:
+                              type: string
+                              name: paymentMethod
+                            rut:
+                              type: string
+                              name: rut
+                            saleType:
+                              type: string
+                              name: saleType
+                            toAmount:
+                              type: number
+                              name: toAmount
+                            toChange:
+                              type: number
+                              name: toChange
+                            toDate:
+                              type: string
+                              name: toDate
+                            toHour:
+                              type: string
+                              name: toHour
+                            transactionId:
+                              type: number
+                              name: transactionId
+                            voucherType:
+                              type: string
+                              name: voucherType
+                            cardNumber:
+                              type: string
+                              name: cardNumber
+                            brandCode:
+                              type: string
+                              name: brandCode
+                            saleTid:
+                              type: string
+                              name: saleTid
+                          example: >-
+                            {"applicationId":"string","approvedStatus":"REJECTED","authorizationCode":"string","connectionType":"string","currency":"CLP","employeeCode":"string","fromAmount":0,"fromChange":0,"fromDate":"yyyyMMdd","fromHour":"HHmmss","getCount":true,"typeHrc":true,"localCodes":["string"],"messageType":0,"page":0,"pageSize":0,"paymentMethod":"DEBIT","rut":"string","saleType":"AUTHORIZATION","toAmount":0,"toChange":0,"toDate":"yyyyMMdd","toHour":"HHmmss","transactionId":0,"voucherType":"NEITHER","cardNumber":"9364017402734018403","brandCode":"MG","saleTid":"0238204839"}
+                        variable: message.body
+                        content: application/json
+                      ctx.pageNumber:
+                        schema:
+                          type: integer
+                          format: int32
+                        variable: ctx.pageNumber
+                      ctx.pageSize:
+                        schema:
+                          type: integer
+                          format: int32
+                        variable: ctx.pageSize
+                    actions:
+                      - set: output.applicationId
+                        from: body.data.applicationId
+                      - set: output.authorizationCode
+                        from: body.data.authorizationCode
+                      - set: output.currency
+                        from: body.data.currency
+                      - set: output.employeeCode
+                        from: body.data.employeeCode
+                      - set: output.fromAmount
+                        from: body.data.fromAmount
+                      - set: output.fromChange
+                        from: body.data.fromChange
+                      - set: output.getCount
+                        from: body.data.getCount
+                      - set: output.typeHrc
+                        from: body.data.typeHrc
+                      - set: output.messageType
+                        from: body.data.messageType
+                      - set: output.localCodes
+                        from: body.data.commerceCodes
+                      - set: output.paymentMethod
+                        from: body.data.paymentMethod
+                      - set: output.toAmount
+                        from: body.data.toAmount
+                      - set: output.toChange
+                        from: body.data.toChange
+                      - set: output.transactionId
+                        from: body.data.id
+                      - set: output.saleTid
+                        from: body.data.saleTid
+                      - set: output.cardNumber
+                        from: body.data.cardNumber
+                      - set: output.brandCode
+                        from: body.data.brandCode
+                      - set: output.voucherType
+                        from: body.data.voucherType
+                      - set: output.saleType
+                        from: body.data.saleType
+                      - set: output.approvedStatus
+                        from: body.data.status
+                      - set: output.connectionType
+                        from: body.data.connectionType
+                      - set: output.page
+                        from: body.pagination.page
+                      - set: output.pageSize
+                        from: body.pagination.size
+                      - set: output.fromDate
+                        from: ctx\.fromDate
+                      - set: output.fromHour
+                        from: ctx\.fromHour
+                      - set: output.toDate
+                        from: ctx\.toDate
+                      - set: output.toHour
+                        from: ctx\.toHour
+                      - set: ctx\.pageNumber
+                        from: body.pagination.page
+                      - set: ctx\.pageSize
+                        from: body.pagination.size
+                      - set: output.rut
+                        from: ctx\.rut
+                    options:
+                      mapEmulateV4EmptyJSONObject: false
+                      mapEmulateV4DefaultRequiredProps: false
+                      mapEnablePostProcessingJSON: false
+                      mapReferenceLimit: 1
+                      messagesInputData: warn
+                - switch:
+                    version: 2.0.0
+                    title: switch
+                    case:
+                      - condition: (ctx.mock=1)
+                        execute:
+                          - invoke:
+                              version: 2.2.0
+                              title: invoke
+                              backend-type: detect
+                              header-control:
+                                type: blocklist
+                                values: []
+                              parameter-control:
+                                type: blocklist
+                                values: []
+                              http-version: HTTP/1.0
+                              timeout: 60
+                              verb: keep
+                              persistent-connection: true
+                              cache-response: protocol
+                              cache-ttl: 900
+                              graphql-send-type: detect
+                              target-url: $(target-url-transaccionenlinea-hrc-mock)
+                      - otherwise:
+                          - invoke:
+                              version: 2.2.0
+                              title: invoke
+                              backend-type: detect
+                              header-control:
+                                type: blocklist
+                                values: []
+                              parameter-control:
+                                type: blocklist
+                                values: []
+                              http-version: HTTP/1.1
+                              timeout: 60
+                              verb: keep
+                              chunked-uploads: true
+                              persistent-connection: true
+                              cache-response: protocol
+                              cache-ttl: 900
+                              graphql-send-type: detect
+                              websocket-upgrade: false
+                              target-url: $(target-url-transaccionenlinea-hrc)
+                - gatewayscript:
+                    version: 2.0.0
+                    title: validateResponse
+                    source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript que permite validar la respuesta \r\n*                entregada por el backend\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n* @version: 2022/05/09\r\n* @desc:  version inicial\r\n*/\r\nconst deafultErrorMessage = \"Service unavailable\"\r\nconst errors = [];\r\n\r\nconst statusCode = context.get(\"message.status.code\");\r\n\r\nconsole.info(\"Inicio de validateResponse\");\r\n\r\nconsole.info(`Status code de respuesta: %s`,statusCode);\r\n\r\nconst body = context.get(\"message.body\");\r\n\r\nif( statusCode != 200){\r\n\r\n    context.message.body.readAsJSON(function(error, body) {\r\n        if (error) {\r\n            console.log(\"Error obteniendo la respuesta\")\r\n            const errors = [{\r\n                \"status\": 503,\r\n                \"title\": \"Respuesta invalida\",\r\n                \"detail\": \"El objeto de la respuesta es invalida\"\r\n            }];\r\n    \r\n            context.set(\"ctx.errorData\",errors);\r\n            context.reject(\"ResponseException\",deafultErrorMessage);\r\n        }\r\n        console.info(`Objeto de la respuesta: `, JSON.stringify(body));\r\n\r\n        const errors = [{\r\n            \"status\": statusCode,\r\n            \"title\": \"Servicio interno no disponible\",\r\n            \"detail\": body.description\r\n        }];\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ResponseException\",deafultErrorMessage);\r\n    });\r\n}\r\n\r\n    "
+                - map:
+                    version: 2.1.0
+                    title: mapResponse
+                    inputs:
+                      input:
+                        schema:
+                          description: ''
+                          type: object
+                          properties:
+                            code:
+                              type: number
+                              name: code
+                            description:
+                              type: string
+                              name: description
+                            totalTransactions:
+                              type: number
+                              name: totalTransactions
+                            transactions:
+                              type: array
+                              items:
+                                properties:
+                                  address:
+                                    type: object
+                                    properties:
+                                      city:
+                                        type: string
+                                        name: city
+                                      comune:
+                                        type: string
+                                        name: comune
+                                      country:
+                                        type: string
+                                        name: country
+                                      fullAddress:
+                                        type: string
+                                        name: fullAddress
+                                    name: address
+                                  applicationId:
+                                    type: string
+                                    name: applicationId
+                                  applicationVersion:
+                                    type: string
+                                    name: applicationVersion
+                                  approvedStatus:
+                                    type: string
+                                    name: approvedStatus
+                                  authorizationCode:
+                                    type: string
+                                    name: authorizationCode
+                                  buyOrder:
+                                    type: string
+                                    name: buyOrder
+                                  cardBrand:
+                                    type: string
+                                    name: cardBrand
+                                  cardNumber:
+                                    type: string
+                                    name: cardNumber
+                                  cdgTypHhRc:
+                                    type: number
+                                    name: cdgTypHhRc
+                                  change:
+                                    type: number
+                                    name: change
+                                  checkingAccountNumber:
+                                    type: string
+                                    name: checkingAccountNumber
+                                  currencyCode:
+                                    type: number
+                                    name: currencyCode
+                                  employeeCode:
+                                    type: string
+                                    name: employeeCode
+                                  entryMode:
+                                    type: number
+                                    name: entryMode
+                                  establishment:
+                                    type: object
+                                    properties:
+                                      businessName:
+                                        type: string
+                                        name: businessName
+                                      connectionType:
+                                        type: string
+                                        name: connectionType
+                                      rut:
+                                        type: string
+                                        name: rut
+                                    name: establishment
+                                  fantasyName:
+                                    type: string
+                                    name: fantasyName
+                                  installmentType:
+                                    type: string
+                                    name: installmentType
+                                  installmentsInfo:
+                                    type: array
+                                    items:
+                                      properties:
+                                        installmentAmount:
+                                          type: number
+                                          name: installmentAmount
+                                        installmentNumber:
+                                          type: number
+                                          name: installmentNumber
+                                      type: object
+                                    name: installmentsInfo
+                                  installmentsNumber:
+                                    type: number
+                                    name: installmentsNumber
+                                  interestRate:
+                                    type: string
+                                    name: interestRate
+                                  invoiceNumber:
+                                    type: string
+                                    name: invoiceNumber
+                                  messageType:
+                                    type: number
+                                    name: messageType
+                                  operationNumber:
+                                    type: number
+                                    name: operationNumber
+                                  paymentMethod:
+                                    type: string
+                                    name: paymentMethod
+                                  productAmount:
+                                    type: number
+                                    name: productAmount
+                                  product:
+                                    type: string
+                                    name: product
+                                  retailerId:
+                                    type: string
+                                    name: retailerId
+                                  serviceId:
+                                    type: string
+                                    name: serviceId
+                                  surcharge:
+                                    type: boolean
+                                    name: surcharge
+                                  surchargeAmount:
+                                    type: number
+                                    name: surchargeAmount
+                                  terminalId:
+                                    type: string
+                                    name: terminalId
+                                  terminalSerialNumber:
+                                    type: string
+                                    name: terminalSerialNumber
+                                  tipAmount:
+                                    type: number
+                                    name: tipAmount
+                                  transactionAmount:
+                                    type: number
+                                    name: transactionAmount
+                                  transactionDay:
+                                    type: number
+                                    name: transactionDay
+                                  transactionHour:
+                                    type: string
+                                    name: transactionHour
+                                  transactionId:
+                                    type: number
+                                    name: transactionId
+                                  transactionMonth:
+                                    type: number
+                                    name: transactionMonth
+                                  transactionSubtype:
+                                    type: string
+                                    name: transactionSubtype
+                                  transactionYear:
+                                    type: number
+                                    name: transactionYear
+                                  voucherType:
+                                    type: string
+                                    name: voucherType
+                                  brandCode:
+                                    type: string
+                                    name: brandCode
+                                  tidVenta:
+                                    type: string
+                                    name: tidVenta
+                                type: object
+                              name: transactions
+                          example: >-
+                            {"code":0,"description":"string","totalTransactions":0,"transactions":[{"address":{"city":"string","comune":"string","country":"string","fullAddress":"string"},"applicationId":"string","applicationVersion":"string","approvedStatus":"REJECTED","authorizationCode":"string","buyOrder":"string","cardBrand":"AX","cardNumber":"string","cdgTypHhRc":0,"change":0,"checkingAccountNumber":"string","currencyCode":0,"employeeCode":"string","entryMode":0,"establishment":{"businessName":"string","connectionType":"string","rut":"string"},"fantasyName":"string","installmentType":"C2C","installmentsInfo":[{"installmentAmount":0,"installmentNumber":0}],"installmentsNumber":0,"interestRate":"string","invoiceNumber":"string","messageType":0,"operationNumber":0,"paymentMethod":"string","productAmount":0,"product":"string","retailerId":"string","serviceId":"string","surcharge":true,"surchargeAmount":0,"terminalId":"string","terminalSerialNumber":"string","tipAmount":0,"transactionAmount":0,"transactionDay":0,"transactionHour":"string","transactionId":0,"transactionMonth":0,"transactionSubtype":"string","transactionYear":0,"voucherType":"string"},{"address":{"city":"string","comune":"string","country":"string","fullAddress":"string"},"applicationId":"string","applicationVersion":"string","approvedStatus":"REJECTED","authorizationCode":"string","buyOrder":"string","cardBrand":"AX","cardNumber":"string","cdgTypHhRc":0,"change":0,"checkingAccountNumber":"string","currencyCode":0,"employeeCode":"string","entryMode":0,"establishment":{"businessName":"string","connectionType":"string","rut":"string"},"fantasyName":"string","installmentType":"C2C","installmentsInfo":[{"installmentAmount":0,"installmentNumber":0}],"installmentsNumber":0,"interestRate":"string","invoiceNumber":"string","messageType":0,"operationNumber":0,"paymentMethod":"string","productAmount":0,"product":"string","retailerId":"string","serviceId":"string","surcharge":true,"surchargeAmount":0,"terminalId":"string","terminalSerialNumber":"string","tipAmount":0,"transactionAmount":0,"transactionDay":0,"transactionHour":"string","transactionId":0,"transactionMonth":0,"transactionSubtype":"string","transactionYear":0,"voucherType":"string","brandCode":"TB","tidVenta":"String"}]}
+                        variable: message.body
+                        content: application/json
+                    outputs:
+                      response:
+                        schema:
+                          $ref: '#/components/schemas/OnlineTransactionsRs'
+                        variable: message.body
+                        content: application/json
+                    actions:
+                      - create: response.data
+                        foreach: input.transactions
+                        from: input.transactions
+                        actions:
+                          - set: address.city
+                            from: address.city
+                          - set: address.comuna
+                            from: address.comune
+                          - set: address.country
+                            from: address.country
+                          - set: address.fullAddress
+                            from: address.fullAddress
+                          - set: cardNumber
+                            from: cardNumber
+                          - set: cardBrand
+                            from: cardBrand
+                          - set: status
+                            from: approvedStatus
+                          - set: authorizationCode
+                            from: authorizationCode
+                          - set: buyOrder
+                            from: buyOrder
+                          - set: cdgTypHhRc
+                            from: cdgTypHhRc
+                          - set: change
+                            from: change
+                          - set: checkingAccountNumber
+                            from: checkingAccountNumber
+                          - set: currencyCode
+                            from: currencyCode
+                          - set: entryMode
+                            from: entryMode
+                          - set: employeeCode
+                            from: employeeCode
+                          - set: establishment.commerceName
+                            from: establishment.businessName
+                          - set: establishment.connectionType
+                            from: establishment.connectionType
+                          - set: establishment.rut
+                            from: establishment.rut
+                          - set: establishment.fantasyName
+                            from: fantasyName
+                          - set: interestRate
+                            from: interestRate
+                          - set: invoiceNumber
+                            from: invoiceNumber
+                          - set: messageType
+                            from: messageType
+                          - set: operationNumber
+                            from: operationNumber
+                          - set: paymentMethod
+                            from: paymentMethod
+                          - set: productAmount
+                            from: productAmount
+                          - set: product
+                            from: product
+                          - set: retailerId
+                            from: retailerId
+                          - set: serviceId
+                            from: serviceId
+                          - set: surcharge
+                            from: surcharge
+                          - set: surchargeAmount
+                            from: surchargeAmount
+                          - set: tipAmount
+                            from: tipAmount
+                          - set: application.id
+                            from: applicationId
+                          - set: application.version
+                            from: applicationVersion
+                          - set: voucherType
+                            from: voucherType
+                          - set: subtype
+                            from: transactionSubtype
+                          - set: amount
+                            from: transactionAmount
+                          - set: installment.type
+                            from: installmentType
+                          - set: installment.number
+                            from: installmentsNumber
+                          - set: terminal.id
+                            from: terminalId
+                          - set: terminal.serialNumber
+                            from: terminalSerialNumber
+                          - set: brandCode
+                            from: brandCode
+                          - set: saleTid
+                            from: tidVenta
+                          - set: installmentsInfo.amount
+                            from: installmentsInfo.installmentAmount
+                          - set: installmentsInfo.number
+                            from: installmentsInfo.installmentNumber
+                          - set: id
+                            from: transactionId
+                          - set: date
+                            from:
+                              - transactionYear
+                              - transactionDay
+                              - transactionHour
+                              - transactionMonth
+                            value: >-
+                              $(transactionYear)+"-"+('0' +
+                              $(transactionMonth)).slice(-2)+"-"+('0' +
+                              $(transactionDay)).slice(-2)+"T"+($(transactionHour).replace(/.{2}/g,
+                              '$&:')).slice(0,-1) 
+                      - set: response.meta._msgId
+                        value: context.get('session.globalTransactionID');
+                      - set: response.meta._version
+                        value: context.get('api.version');
+                      - set: response.meta._rqDateTime
+                        value: context.get('system.datetime');
+                      - set: response.meta._clientId
+                        value: context.get('client.org.name').toUpperCase();
+                      - set: response.meta._transactionId
+                        value: context.get('session.transactionID');
+                      - set: response.meta._totalTransactions
+                        from: input.totalTransactions
+                      - set: response.pagination.page
+                        value: context.get('ctx.pageNumber');
+                      - set: response.pagination.size
+                        value: context.get('ctx.pageSize');
+                      - set: response.meta._rsLength
+                        from: input.transactions
+                        value: ($(input.transactions)).length
+                    options:
+                      mapEmulateV4EmptyJSONObject: false
+                      mapEmulateV4DefaultRequiredProps: false
+                      mapEnablePostProcessingJSON: false
+                      mapReferenceLimit: 1
+                      messagesInputData: warn
+            - condition: >-
+                ($operationPath() = '/online-transactions' and $httpVerb() =
+                'POST' and ctx.typeHrc=0)
+              execute:
+                - gatewayscript:
+                    version: 2.0.0
+                    title: validateParameters
+                    source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript el cual validara los parametros\r\n*                obligatorios para la operación\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n*\r\n* @version: 2022/05/09\r\n* @desc:  version inicial\r\n*/\r\n\r\nconst deafultErrorMessage = \"Invalid Parameter: Validation Failure\";\r\nconst errors = [];\r\n\r\nconsole.info(\"Inicio de validateParameter\");\r\n\r\ncontext.message.body.readAsJSON(function(error, body) {\r\n\r\n    if (error) {\r\n        console.log(\"Error obteniendo el mensaje\");\r\n        const errors = [{\r\n            \"status\": 400,\r\n            \"title\": \"Data invalida\",\r\n            \"detail\": \"El objeto data entregado no es valido\"\r\n        }];\r\n\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ParametersException\",deafultErrorMessage);\r\n    }\r\n    const pagination =  body.pagination;\r\n\r\n    validation(!pagination,\r\n        { \"status\": 400,\r\n            \"title\": \"pagination invalido\",\r\n            \"source\": { \"pointer\" : \"pagination\" },\r\n            \"detail\": `El campo pagination es obligatorio` \r\n        },true); \r\n\r\n    validation(!pagination.size,\r\n        { \"status\": 400,\r\n            \"title\": \"pageSize invalido\",\r\n            \"source\": { \"pointer\" : \"pageSize\" },\r\n            \"detail\": `El campo pageSize es obligatorio` \r\n        }); \r\n\r\n    validation(!pagination.page,\r\n            { \"status\": 400,\r\n                \"title\": \"pageNumber invalido\",\r\n                \"source\": { \"pointer\" : \"pageNumber\" },\r\n                \"detail\": `El campo pageNumber es obligatorio` \r\n            });\r\n            \r\n    if(errors.length > 0){\r\n        throwError();\r\n    }\r\n});\r\n\r\nfunction throwError(){\r\n    if(errors){\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ParametersException\",deafultErrorMessage);\r\n    } \r\n}\r\n\r\nfunction validation(isError, errorObject, isImmediate ){\r\n    console.info(\"Verificacion del campo %s \",\r\n        errorObject.source.pointer ? errorObject.source.pointer :\"\" );               \r\n    if(isError){\r\n        console.info(\"Falla validación del campo %s \",\r\n        errorObject.source.pointer ? errorObject.source.pointer :\"\" ); \r\n        errors.push(errorObject);\r\n        if(isImmediate){\r\n            throwError();\r\n        }\r\n    }\r\n}"
+                - map:
+                    version: 2.1.0
+                    title: mapRequest
+                    inputs:
+                      body:
+                        schema:
+                          $ref: '#/components/schemas/OnlineTransactionsRq'
+                        variable: message.body
+                        content: application/json
+                      ctx.fromDate:
+                        schema:
+                          type: string
+                        variable: ctx.fromDate
+                      ctx.fromHour:
+                        schema:
+                          type: string
+                        variable: ctx.fromHour
+                      ctx.toDate:
+                        schema:
+                          type: string
+                        variable: ctx.toDate
+                      ctx.toHour:
+                        schema:
+                          type: string
+                        variable: ctx.toHour
+                      ctx.rut:
+                        schema:
+                          type: string
+                        variable: ctx.rut
+                    outputs:
+                      output:
+                        schema:
+                          description: ''
+                          type: object
+                          properties:
+                            applicationId:
+                              type: string
+                              name: applicationId
+                            approvedStatus:
+                              type: string
+                              name: approvedStatus
+                            authorizationCode:
+                              type: string
+                              name: authorizationCode
+                            connectionType:
+                              type: string
+                              name: connectionType
+                            currency:
+                              type: string
+                              name: currency
+                            employeeCode:
+                              type: string
+                              name: employeeCode
+                            fromAmount:
+                              type: number
+                              name: fromAmount
+                            fromChange:
+                              type: number
+                              name: fromChange
+                            fromDate:
+                              type: string
+                              name: fromDate
+                            fromHour:
+                              type: string
+                              name: fromHour
+                            getCount:
+                              type: boolean
+                              name: getCount
+                            typeHrc:
+                              type: boolean
+                              name: typeHrc
+                            localCodes:
+                              type: array
+                              items:
+                                type: string
+                              name: localCodes
+                            messageType:
+                              type: number
+                              name: messageType
+                            page:
+                              type: number
+                              name: page
+                            pageSize:
+                              type: number
+                              name: pageSize
+                            paymentMethod:
+                              type: string
+                              name: paymentMethod
+                            rut:
+                              type: string
+                              name: rut
+                            saleType:
+                              type: string
+                              name: saleType
+                            toAmount:
+                              type: number
+                              name: toAmount
+                            toChange:
+                              type: number
+                              name: toChange
+                            toDate:
+                              type: string
+                              name: toDate
+                            toHour:
+                              type: string
+                              name: toHour
+                            transactionId:
+                              type: number
+                              name: transactionId
+                            voucherType:
+                              type: string
+                              name: voucherType
+                            cardNumber:
+                              type: string
+                              name: cardNumber
+                            brandCode:
+                              type: string
+                              name: brandCode
+                            saleTid:
+                              type: string
+                              name: saleTid
+                          example: >-
+                            {"applicationId":"string","approvedStatus":"REJECTED","authorizationCode":"string","connectionType":"string","currency":"CLP","employeeCode":"string","fromAmount":0,"fromChange":0,"fromDate":"yyyyMMdd","fromHour":"HHmmss","getCount":true,"typeHrc":true,"localCodes":["string"],"messageType":0,"page":0,"pageSize":0,"paymentMethod":"DEBIT","rut":"string","saleType":"AUTHORIZATION","toAmount":0,"toChange":0,"toDate":"yyyyMMdd","toHour":"HHmmss","transactionId":0,"voucherType":"NEITHER","cardNumber":"9364017402734018403","brandCode":"MG","saleTid":"0238204839"}
+                        variable: message.body
+                        content: application/json
+                      ctx.pageNumber:
+                        schema:
+                          type: integer
+                          format: int32
+                        variable: ctx.pageNumber
+                      ctx.pageSize:
+                        schema:
+                          type: integer
+                          format: int32
+                        variable: ctx.pageSize
+                    actions:
+                      - set: output.applicationId
+                        from: body.data.applicationId
+                      - set: output.authorizationCode
+                        from: body.data.authorizationCode
+                      - set: output.currency
+                        from: body.data.currency
+                      - set: output.approvedStatus
+                        from: body.data.status
+                      - set: output.connectionType
+                        from: body.data.connectionType
+                      - set: output.employeeCode
+                        from: body.data.employeeCode
+                      - set: output.fromAmount
+                        from: body.data.fromAmount
+                      - set: output.fromChange
+                        from: body.data.fromChange
+                      - set: output.getCount
+                        from: body.data.getCount
+                      - set: output.typeHrc
+                        from: body.data.typeHrc
+                      - set: output.localCodes
+                        from: body.data.commerceCodes
+                      - set: output.messageType
+                        from: body.data.messageType
+                      - set: output.paymentMethod
+                        from: body.data.paymentMethod
+                      - set: output.page
+                        from: body.pagination.page
+                      - set: output.pageSize
+                        from: body.pagination.size
+                      - set: output.saleType
+                        from: body.data.saleType
+                      - set: output.toAmount
+                        from: body.data.toAmount
+                      - set: output.toChange
+                        from: body.data.toChange
+                      - set: output.transactionId
+                        from: body.data.id
+                      - set: output.cardNumber
+                        from: body.data.cardNumber
+                      - set: output.saleTid
+                        from: body.data.saleTid
+                      - set: output.brandCode
+                        from: body.data.brandCode
+                      - set: output.voucherType
+                        from: body.data.voucherType
+                      - set: output.fromDate
+                        from: ctx\.fromDate
+                      - set: output.fromHour
+                        from: ctx\.fromHour
+                      - set: output.toDate
+                        from: ctx\.toDate
+                      - set: output.toHour
+                        from: ctx\.toHour
+                      - set: ctx\.pageNumber
+                        from: body.pagination.page
+                      - set: ctx\.pageSize
+                        from: body.pagination.size
+                      - set: output.rut
+                        from: ctx\.rut
+                    options:
+                      mapEmulateV4EmptyJSONObject: false
+                      mapEmulateV4DefaultRequiredProps: false
+                      mapEnablePostProcessingJSON: false
+                      mapReferenceLimit: 1
+                      messagesInputData: warn
+                - switch:
+                    version: 2.0.0
+                    title: switch
+                    case:
+                      - condition: (ctx.mock=1)
+                        execute:
+                          - invoke:
+                              version: 2.2.0
+                              title: invoke
+                              backend-type: detect
+                              header-control:
+                                type: blocklist
+                                values: []
+                              parameter-control:
+                                type: blocklist
+                                values: []
+                              http-version: HTTP/1.0
+                              timeout: 60
+                              verb: keep
+                              persistent-connection: true
+                              cache-response: protocol
+                              cache-ttl: 900
+                              graphql-send-type: detect
+                              target-url: $(target-url-transaccionenlinea-mock)
+                      - otherwise:
+                          - invoke:
+                              version: 2.2.0
+                              title: invoke
+                              backend-type: detect
+                              header-control:
+                                type: blocklist
+                                values: []
+                              parameter-control:
+                                type: blocklist
+                                values: []
+                              http-version: HTTP/1.1
+                              timeout: 60
+                              verb: keep
+                              chunked-uploads: true
+                              persistent-connection: true
+                              cache-response: protocol
+                              cache-ttl: 900
+                              graphql-send-type: detect
+                              websocket-upgrade: false
+                              target-url: $(target-url-transaccionenlinea)
+                - gatewayscript:
+                    version: 2.0.0
+                    title: validateResponse
+                    source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript que permite validar la respuesta \r\n*                entregada por el backend\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n* @version: 2022/05/09\r\n* @desc:  version inicial\r\n*/\r\nconst deafultErrorMessage = \"Service unavailable\";\r\nconst errors = [];\r\n\r\nconst statusCode = context.get(\"message.status.code\");\r\n\r\nconsole.info(\"Inicio de validateResponse\");\r\n\r\nconsole.info(`Status code de respuesta: %s`,statusCode);\r\n\r\nconst body = context.get(\"message.body\");\r\n\r\nif( statusCode != 200){\r\n\r\n    context.message.body.readAsJSON(function(error, body) {\r\n        if (error) {\r\n            console.log(\"Error obteniendo la respuesta\");\r\n            const errors = [{\r\n                \"status\": 503,\r\n                \"title\": \"Respuesta invalida\",\r\n                \"detail\": \"El objeto de la respuesta es invalida\"\r\n            }];\r\n    \r\n            context.set(\"ctx.errorData\",errors);\r\n            context.reject(\"ResponseException\",deafultErrorMessage);\r\n        }\r\n        console.info(`Objeto de la respuesta: `, JSON.stringify(body));\r\n\r\n        const errors = [{\r\n            \"status\": statusCode,\r\n            \"title\": \"Servicio interno no disponible\",\r\n            \"detail\": body.description\r\n        }];\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ResponseException\",deafultErrorMessage);\r\n    });\r\n}\r\n\r\n    "
+                - map:
+                    version: 2.1.0
+                    title: mapResponse
+                    inputs:
+                      input:
+                        schema:
+                          description: ''
+                          type: object
+                          properties:
+                            code:
+                              type: number
+                              name: code
+                            description:
+                              type: string
+                              name: description
+                            totalTransactions:
+                              type: number
+                              name: totalTransactions
+                            transactions:
+                              type: array
+                              items:
+                                properties:
+                                  address:
+                                    type: object
+                                    properties:
+                                      city:
+                                        type: string
+                                        name: city
+                                      comune:
+                                        type: string
+                                        name: comune
+                                      country:
+                                        type: string
+                                        name: country
+                                      fullAddress:
+                                        type: string
+                                        name: fullAddress
+                                    name: address
+                                  applicationId:
+                                    type: string
+                                    name: applicationId
+                                  applicationVersion:
+                                    type: string
+                                    name: applicationVersion
+                                  approvedStatus:
+                                    type: string
+                                    name: approvedStatus
+                                  authorizationCode:
+                                    type: string
+                                    name: authorizationCode
+                                  buyOrder:
+                                    type: string
+                                    name: buyOrder
+                                  cardBrand:
+                                    type: string
+                                    name: cardBrand
+                                  cardNumber:
+                                    type: string
+                                    name: cardNumber
+                                  cdgTypHhRc:
+                                    type: number
+                                    name: cdgTypHhRc
+                                  change:
+                                    type: number
+                                    name: change
+                                  checkingAccountNumber:
+                                    type: string
+                                    name: checkingAccountNumber
+                                  currencyCode:
+                                    type: number
+                                    name: currencyCode
+                                  employeeCode:
+                                    type: string
+                                    name: employeeCode
+                                  entryMode:
+                                    type: number
+                                    name: entryMode
+                                  establishment:
+                                    type: object
+                                    properties:
+                                      businessName:
+                                        type: string
+                                        name: businessName
+                                      connectionType:
+                                        type: string
+                                        name: connectionType
+                                      rut:
+                                        type: string
+                                        name: rut
+                                    name: establishment
+                                  fantasyName:
+                                    type: string
+                                    name: fantasyName
+                                  installmentType:
+                                    type: string
+                                    name: installmentType
+                                  installmentsInfo:
+                                    type: array
+                                    items:
+                                      properties:
+                                        installmentAmount:
+                                          type: number
+                                          name: installmentAmount
+                                        installmentNumber:
+                                          type: number
+                                          name: installmentNumber
+                                      type: object
+                                    name: installmentsInfo
+                                  installmentsNumber:
+                                    type: number
+                                    name: installmentsNumber
+                                  interestRate:
+                                    type: string
+                                    name: interestRate
+                                  invoiceNumber:
+                                    type: string
+                                    name: invoiceNumber
+                                  messageType:
+                                    type: number
+                                    name: messageType
+                                  operationNumber:
+                                    type: number
+                                    name: operationNumber
+                                  paymentMethod:
+                                    type: string
+                                    name: paymentMethod
+                                  productAmount:
+                                    type: number
+                                    name: productAmount
+                                  product:
+                                    type: string
+                                    name: product
+                                  retailerId:
+                                    type: string
+                                    name: retailerId
+                                  serviceId:
+                                    type: string
+                                    name: serviceId
+                                  surcharge:
+                                    type: boolean
+                                    name: surcharge
+                                  surchargeAmount:
+                                    type: number
+                                    name: surchargeAmount
+                                  terminalId:
+                                    type: string
+                                    name: terminalId
+                                  terminalSerialNumber:
+                                    type: string
+                                    name: terminalSerialNumber
+                                  tipAmount:
+                                    type: number
+                                    name: tipAmount
+                                  transactionAmount:
+                                    type: number
+                                    name: transactionAmount
+                                  transactionDay:
+                                    type: number
+                                    name: transactionDay
+                                  transactionHour:
+                                    type: string
+                                    name: transactionHour
+                                  transactionId:
+                                    type: number
+                                    name: transactionId
+                                  transactionMonth:
+                                    type: number
+                                    name: transactionMonth
+                                  transactionSubtype:
+                                    type: string
+                                    name: transactionSubtype
+                                  transactionYear:
+                                    type: number
+                                    name: transactionYear
+                                  voucherType:
+                                    type: string
+                                    name: voucherType
+                                  brandCode:
+                                    type: string
+                                    name: brandCode
+                                  tidVenta:
+                                    type: string
+                                    name: tidVenta
+                                type: object
+                              name: transactions
+                          example: >-
+                            {"code":0,"description":"string","totalTransactions":0,"transactions":[{"address":{"city":"string","comune":"string","country":"string","fullAddress":"string"},"applicationId":"string","applicationVersion":"string","approvedStatus":"REJECTED","authorizationCode":"string","buyOrder":"string","cardBrand":"AX","cardNumber":"string","cdgTypHhRc":0,"change":0,"checkingAccountNumber":"string","currencyCode":0,"employeeCode":"string","entryMode":0,"establishment":{"businessName":"string","connectionType":"string","rut":"string"},"fantasyName":"string","installmentType":"C2C","installmentsInfo":[{"installmentAmount":0,"installmentNumber":0}],"installmentsNumber":0,"interestRate":"string","invoiceNumber":"string","messageType":0,"operationNumber":0,"paymentMethod":"string","productAmount":0,"product":"string","retailerId":"string","serviceId":"string","surcharge":true,"surchargeAmount":0,"terminalId":"string","terminalSerialNumber":"string","tipAmount":0,"transactionAmount":0,"transactionDay":0,"transactionHour":"string","transactionId":0,"transactionMonth":0,"transactionSubtype":"string","transactionYear":0,"voucherType":"string"},{"address":{"city":"string","comune":"string","country":"string","fullAddress":"string"},"applicationId":"string","applicationVersion":"string","approvedStatus":"REJECTED","authorizationCode":"string","buyOrder":"string","cardBrand":"AX","cardNumber":"string","cdgTypHhRc":0,"change":0,"checkingAccountNumber":"string","currencyCode":0,"employeeCode":"string","entryMode":0,"establishment":{"businessName":"string","connectionType":"string","rut":"string"},"fantasyName":"string","installmentType":"C2C","installmentsInfo":[{"installmentAmount":0,"installmentNumber":0}],"installmentsNumber":0,"interestRate":"string","invoiceNumber":"string","messageType":0,"operationNumber":0,"paymentMethod":"string","productAmount":0,"product":"string","retailerId":"string","serviceId":"string","surcharge":true,"surchargeAmount":0,"terminalId":"string","terminalSerialNumber":"string","tipAmount":0,"transactionAmount":0,"transactionDay":0,"transactionHour":"string","transactionId":0,"transactionMonth":0,"transactionSubtype":"string","transactionYear":0,"voucherType":"string","brandCode":"TB","tidVenta":"String"}]}
+                        variable: message.body
+                        content: application/json
+                    outputs:
+                      response:
+                        schema:
+                          $ref: '#/components/schemas/OnlineTransactionsRs'
+                        variable: message.body
+                        content: application/json
+                    actions:
+                      - create: response.data
+                        foreach: input.transactions
+                        from: input.transactions
+                        actions:
+                          - set: address.city
+                            from: address.city
+                          - set: address.country
+                            from: address.country
+                          - set: address.comuna
+                            from: address.comune
+                          - set: address.fullAddress
+                            from: address.fullAddress
+                          - set: status
+                            from: approvedStatus
+                          - set: authorizationCode
+                            from: authorizationCode
+                          - set: buyOrder
+                            from: buyOrder
+                          - set: cardBrand
+                            from: cardBrand
+                          - set: cardNumber
+                            from: cardNumber
+                          - set: cdgTypHhRc
+                            from: cdgTypHhRc
+                          - set: change
+                            from: change
+                          - set: checkingAccountNumber
+                            from: checkingAccountNumber
+                          - set: id
+                            from: transactionId
+                          - set: currencyCode
+                            from: currencyCode
+                          - set: employeeCode
+                            from: employeeCode
+                          - set: entryMode
+                            from: entryMode
+                          - set: establishment.connectionType
+                            from: establishment.connectionType
+                          - set: establishment.rut
+                            from: establishment.rut
+                          - set: establishment.commerceName
+                            from: establishment.businessName
+                          - set: establishment.fantasyName
+                            from: fantasyName
+                          - set: interestRate
+                            from: interestRate
+                          - set: invoiceNumber
+                            from: invoiceNumber
+                          - set: messageType
+                            from: messageType
+                          - set: operationNumber
+                            from: operationNumber
+                          - set: paymentMethod
+                            from: paymentMethod
+                          - set: productAmount
+                            from: productAmount
+                          - set: product
+                            from: product
+                          - set: retailerId
+                            from: retailerId
+                          - set: serviceId
+                            from: serviceId
+                          - set: surcharge
+                            from: surcharge
+                          - set: surchargeAmount
+                            from: surchargeAmount
+                          - set: tipAmount
+                            from: tipAmount
+                          - set: voucherType
+                            from: voucherType
+                          - set: subtype
+                            from: transactionSubtype
+                          - set: amount
+                            from: transactionAmount
+                          - set: application.id
+                            from: applicationId
+                          - set: application.version
+                            from: applicationVersion
+                          - set: installment.type
+                            from: installmentType
+                          - set: installment.number
+                            from: installmentsNumber
+                          - set: terminal.id
+                            from: terminalId
+                          - set: terminal.serialNumber
+                            from: terminalSerialNumber
+                          - set: brandCode
+                            from: brandCode
+                          - set: saleTid
+                            from: tidVenta
+                          - set: installmentsInfo.amount
+                            from: installmentsInfo.installmentAmount
+                          - set: installmentsInfo.number
+                            from: installmentsInfo.installmentNumber
+                          - set: date
+                            from:
+                              - transactionDay
+                              - transactionHour
+                              - transactionMonth
+                              - transactionYear
+                            value: >-
+                              $(transactionYear)+"-"+('0' +
+                              $(transactionMonth)).slice(-2)+"-"+('0' +
+                              $(transactionDay)).slice(-2)+"T"+($(transactionHour).replace(/.{2}/g,
+                              '$&:')).slice(0,-1)
+                      - set: response.meta._version
+                        value: context.get('api.version');
+                      - set: response.meta._rqDateTime
+                        value: context.get('system.datetime');
+                      - set: response.meta._clientId
+                        value: context.get('client.org.name').toUpperCase();
+                      - set: response.meta._transactionId
+                        value: context.get('session.transactionID');
+                      - set: response.meta._msgId
+                        value: context.get('session.globalTransactionID');
+                      - set: response.meta._totalTransactions
+                        from: input.totalTransactions
+                      - set: response.meta._rsLength
+                        from: input.transactions
+                        value: ($(input.transactions)).length
+                      - set: response.pagination.page
+                        value: context.get('ctx.pageNumber')
+                      - set: response.pagination.size
+                        value: context.get('ctx.pageSize')
+                    options:
+                      mapEmulateV4EmptyJSONObject: false
+                      mapEmulateV4DefaultRequiredProps: false
+                      mapEnablePostProcessingJSON: false
+                      mapReferenceLimit: 1
+                      messagesInputData: warn
+      - gatewayscript:
+          version: 2.0.0
+          title: cipherBody
+          source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n*-----------------------------------------------------------\r\n* Descripcion  : GatewayScript para el cifrado de mensaje  \r\n*                 con JWE A256GCM en formato JSON Flattened\r\n* Autores      : extjbernal@transbank.cl\r\n*-----------------------------------------------------------\r\n*/\r\n\r\n/**\r\n * Importación de módulos necesarios\r\n */\r\nconst jose = require('jose'); \r\n\r\n/**\r\n* Obtención de la informacion para el cifrado\r\n*/\r\nconst cipherAlgorithm = context.get(\"api.properties.cipherAlgorithm\")\r\nconst cipherAlgorithmKey = context.get(\"api.properties.cipherAlgorithmKey\")\r\nconst jweHdr = jose.createJWEHeader(cipherAlgorithm);\r\nlet publicKey = context.get('cxt.key');\r\nconst deafultErrorMessage = \"Invalid Parameter: Validation Failure\";\r\n\r\n\r\ncontext.message.body.readAsJSON(function(error, body) {\r\n    if (error) {\r\n        console.log(\"Error obteniendo el mensaje\")\r\n        const errors = [{\r\n            \"status\": 400,\r\n            \"title\": \"Data invalida\",\r\n            \"detail\": \"El objeto data entregado no es valido\"\r\n        }];\r\n\r\n        context.set(\"ctx.errorData\",errors);\r\n        context.reject(\"ResponseException\",deafultErrorMessage);\r\n    }\r\n    const data =  body.data;\r\n\r\n    console.info(\"Inicio de cipherBody\");\r\n\r\n    /**\r\n     * Modificacion variables del cifrado\r\n     */\r\n    jweHdr.setProtected('alg', cipherAlgorithmKey);\r\n    jweHdr.setKey(publicKey)\r\n\r\n    /**\r\n     * Descifrado del mensaje\r\n     */\r\n    jose.createJWEEncrypter(jweHdr).update(JSON.stringify(data)).encrypt('compact', function(error, jweObj) {\r\n        if (error) {\r\n            console.log(\"Error cifrando el mensaje\")\r\n            const errors = [{\r\n            \"status\": 503,\r\n            \"title\": \"Servicio interno no disponible\",\r\n            \"detail\": \"El servicio interno no esta disponible\"\r\n        }];\r\n\r\n        context.get(\"ctx.errorData\",errors);\r\n        context.reject(\"ResponseException\",deafultErrorMessage);\r\n        } else {\r\n            console.log(\"body\");\r\n            console.log(body);\r\n            body.data = jweObj;\r\n            session.output.write(body);\r\n        }\r\n    });\r\n}\r\n);\r\n\r\n"
+    catch:
+      - errors:
+          - ParametersException
+          - ResponseException
+        execute:
+          - gatewayscript:
+              version: 2.0.0
+              title: assembleException
+              source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript el cual resivira las excepciones\r\n*                presentadas por la API para retornar el objeto \r\n*                de error esperado\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n*\r\n* @version: 2022/05/09\r\n* @desc:  version inicial\r\n*/\r\n\r\nconst errors = context.get('ctx.errorData');\r\n\r\nconst minStatus = errors.reduce((min, err) => err.status < min ? err.status : min, errors[0].status);\r\n\r\ncontext.set('message.status.code',minStatus);\r\ncontext.set('message.headers.content-type','application/json');\r\n\r\nsession.output.write({\r\n    \"meta\":    {\r\n      \"_msgId\": context.get('session.globalTransactionID'),\r\n      \"_version\": context.get('api.version'),\r\n      \"_rqDateTime\": context.get('system.datetime'),\r\n      \"_clientId\": context.get('client.org.name').toUpperCase(),\r\n      \"_transactionId\": context.get('session.transactionID'),\r\n      \"_rsLength\": errors.length\r\n   },\r\n    \"errors\": errors\r\n    \r\n});"
+      - default:
+          - gatewayscript:
+              version: 2.0.0
+              title: defaultException
+              source: "/**\r\n*  _______                  _                 _    \r\n* |__   __|                | |               | |   \r\n*    | |_ __ __ _ _ __  ___| |__   __ _ _ __ | | __\r\n*    | | '__/ _` | '_ \\/ __| '_ \\ / _` | '_ \\| |/ /\r\n*    | | | | (_| | | | \\__ \\ |_) | (_| | | | |   < \r\n*    |_|_|  \\__,_|_| |_|___/_.__/ \\__,_|_| |_|_|\\_\\ 2022\r\n* \r\n************************************************************\r\n* Descripcion  : GatewayScript el cual retornara el objeto de \r\n*                error para el caso de alguna excepcion que no\r\n*                pueda controlar\r\n* Autores      : extjbernal@transbank.cl\r\n************************************************************\r\n*\r\n* @version: 2022/05/09\r\n* @desc:  version inicial\r\n*/\r\ncontext.set('message.headers.content-type',\"application/json\");\r\n\r\ncontext.set('message.status.code',503);\r\n\r\n\r\nsession.output.write({\r\n    \"meta\":{\r\n        \"_msgId\": context.get('session.globalTransactionID'),\r\n        \"_version\": context.get('api.version'),\r\n        \"_rqDateTime\": context.get('system.datetime'),\r\n        \"_rsSize\": 1,\r\n        \"_clientId\": context.get('client.org.name').toUpperCase(),\r\n        \"_transactionId\": context.get('session.transactionID')\r\n    },\r\n    \"errors\": [{\r\n        \"status\": 503,\r\n        \"title\": \"Servicio no disponible\",\r\n        \"detail\": \"El servicio  no se encuentra disponible. Intente por favor más tarde.\"\r\n    }]\r\n});\r\n"
+    finally: []
+  properties:
+    currencyValues:
+      value: CLP,USD
+    charactersQuantityForCurrency:
+      value: '3'
+    patmentMethodValues:
+      value: DEBIT,CREDIT,PREPAID
+    voucherTypeValues:
+      value: NEITHER,RECEIPT,EXEMPT,INVOICE
+    statusValues:
+      value: REJECTED,APPROVED
+    salesType:
+      value: AUTHORIZATION,NULLIFY
+    cipherAlgorithm:
+      value: A256GCM
+    cipherAlgorithmKey:
+      value: RSA-OAEP-256
+    target-url-transaccionenlinea:
+      value: >-
+        https://voucher.ventasenlinea.desarrollo.transbank.local/venta-en-linea-trx/transactions/
+      description: URL invocación Backend
+      encoded: false
+    target-url-transaccionenlinea-total:
+      value: >-
+        https://voucher.ventasenlinea.desarrollo.transbank.local/venta-linea-suma/transactions/
+      encoded: false
+      description: URL invocación Backend
+    target-url-transaccionenlinea-hrc:
+      value: >-
+        https://voucher.ventasenlinea.desarrollo.transbank.local/venta-linea-hr/transactions/
+      description: URL invocación Backend
+    target-url-transaccionenlinea-mock:
+      value: http://TBK.LAN.LOOPBACK:20080/MocksTBK/APIC/v1/transactionsOnline
+      description: URL invocación Mock
+    target-url-transaccionenlinea-hrc-mock:
+      value: http://TBK.LAN.LOOPBACK:20080/MocksTBK/APIC/v1/transactionsOnline/hrc
+      description: URL invocación Mock
+    target-url-transaccionenlinea-total-mock:
+      value: >-
+        http://TBK.LAN.LOOPBACK:20080/MocksTBK/APIC/v1/transactionsOnline/totalize
+      description: URL invocación Mock
+    brandCode:
+      value: VI,MG,AX,TBK
+    charactersQuantityForAuthorizationCode:
+      value: '8'
+    charactersQuantityForEmployeeCode:
+      value: '6'
+    namePrivateKey:
+      value: name:TransaccionEnLineaCK
+  activity-log:
+    enabled: true
+    success-content: activity
+    error-content: payload

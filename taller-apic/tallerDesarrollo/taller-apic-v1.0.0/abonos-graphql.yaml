@@ -1,0 +1,484 @@
+swagger: '2.0'
+info:
+  title: Abonos GraphQL
+  x-ibm-name: abonos-graphql
+  version: 1.0.0
+schemes:
+  - https
+  - wss
+basePath: /abonos
+x-ibm-configuration:
+  graphql-schema: '#/definitions/schema'
+  type: graphql
+  cors:
+    enabled: false
+  assembly:
+    execute:
+      - switch:
+          version: 2.0.0
+          title: switch
+          description: ''
+          case:
+            - condition: >-
+                (($operationPath() = '/graphql') and ($httpVerb() = 'GET') and
+                (request.websocket = true))
+              execute:
+                - switch:
+                    version: 2.0.0
+                    title: switch
+                    case:
+                      - condition: ($exists($urlParameter('query')))
+                        execute:
+                          - parse:
+                              version: 2.0.0
+                              title: parse
+                              parse-settings-reference:
+                                parse-settings:
+                                  document_type: graphql
+                                  max_nesting_depth: 10
+                              description: Parse the GraphQL query
+                          - validate:
+                              version: 2.5.0
+                              title: validate & analyze
+                              input: message
+                              validate-against: graphql
+                              description: >-
+                                Validate the GraphQL query and analyze the
+                                expected cost
+                      - otherwise: []
+                - websocket-upgrade:
+                    version: 2.0.0
+                    title: websocket-upgrade
+                    header-control:
+                      type: blocklist
+                      values: []
+                    parameter-control:
+                      type: allowlist
+                      values: []
+                    timeout: 60
+                    description: >-
+                      establish the websocket connection to the backend GraphQL
+                      server
+                    target-url: https://dab5-191-95-169-106.ngrok.io/graphql
+                    request-assembly:
+                      execute:
+                        - parse:
+                            version: 2.0.0
+                            title: parse
+                            parse-settings-reference:
+                              parse-settings:
+                                document_type: detect
+                                max_nesting_depth: 10
+                            description: Parse the GraphQL query
+                        - switch:
+                            version: 2.0.0
+                            title: switch
+                            description: ''
+                            case:
+                              - condition: >-
+                                  ($storageType() = "json" and
+                                  $exists(message.body.payload) and
+                                  message.body.payload != null and
+                                  $string(message.body.payload) != '{}')
+                                execute:
+                                  - set-variable:
+                                      version: 2.0.0
+                                      title: backup payload
+                                      actions:
+                                        - set: websocket-backup
+                                          value: $(message.body)
+                                          type: any
+                                        - set: message.body
+                                          value: $(message.body.payload)
+                                          type: any
+                                      description: Backup of websocket request
+                                  - parse:
+                                      version: 2.0.0
+                                      title: parse
+                                      parse-settings-reference:
+                                        parse-settings:
+                                          document_type: graphql
+                                          max_nesting_depth: 10
+                                      description: Parse the GraphQL query
+                                  - validate:
+                                      version: 2.5.0
+                                      title: validate & analyze
+                                      input: message
+                                      validate-against: graphql
+                                      description: >-
+                                        Validate the GraphQL query and analyze
+                                        the expected cost
+                                  - set-variable:
+                                      version: 2.0.0
+                                      title: restore backup
+                                      actions:
+                                        - set: message.body
+                                          value: $(websocket-backup)
+                                          type: any
+                                      description: Restore backup of websocket request
+                              - condition: $storageType() != "json"
+                                execute:
+                                  - validate:
+                                      version: 2.5.0
+                                      title: validate & analyze
+                                      input: message
+                                      validate-against: graphql
+                                      description: >-
+                                        Validate the GraphQL query and analyze
+                                        the expected cost
+                              - condition: >-
+                                  ((message.body.type = 'connection_init') or
+                                  (message.body.type = 'stop') or
+                                  (message.body.type = 'connection_terminate'))
+                                execute: []
+                              - otherwise:
+                                  - throw:
+                                      version: 2.0.0
+                                      title: throw
+                                      name: BadRequestError
+                                      description: >-
+                                        Reject all inputs not handled by other
+                                        branches of the switch
+                                      message: Bad Request
+                        - switch:
+                            version: 2.0.0
+                            title: switch
+                            case:
+                              - condition: >-
+                                  (message.attributes.graphql.query.operationType
+                                  = 'subscription')
+                                execute: []
+                              - condition: >-
+                                  ($exists(message.attributes.graphql.query.operationType))
+                                execute: []
+                              - otherwise: []
+                    response-assembly:
+                      execute:
+                        - parse:
+                            version: 2.0.0
+                            title: parse
+                            parse-settings-reference:
+                              default: apic-default-parsesettings
+                            description: Parse the response from the GraphQL backend server
+                        - switch:
+                            version: 2.0.0
+                            title: switch
+                            description: ''
+                            case:
+                              - condition: >-
+                                  ($exists(message.body.payload) and
+                                  message.body.payload != null and
+                                  $string(message.body.payload) != '{}')
+                                execute:
+                                  - set-variable:
+                                      version: 2.0.0
+                                      title: backup payload
+                                      actions:
+                                        - set: websocket-backup
+                                          value: $(message.body)
+                                          type: any
+                                        - set: message.body
+                                          value: $(message.body.payload)
+                                          type: any
+                                      description: Backup of websocket request
+                                  - parse:
+                                      version: 2.0.0
+                                      title: parse
+                                      parse-settings-reference:
+                                        default: apic-default-parsesettings
+                                      description: >-
+                                        Parse the response from the GraphQL
+                                        backend server
+                                  - validate:
+                                      version: 2.5.0
+                                      title: validate & analyze
+                                      input: message
+                                      validate-against: graphql
+                                      description: >-
+                                        Validate the returned JSON and analyze
+                                        the real cost
+                                  - set-variable:
+                                      version: 2.0.0
+                                      title: restore backup
+                                      actions:
+                                        - set: message.body
+                                          value: $(websocket-backup)
+                                          type: any
+                                      description: Restore backup of websocket request
+                              - condition: ($exists(message.body.data))
+                                execute:
+                                  - validate:
+                                      version: 2.5.0
+                                      title: validate & analyze
+                                      input: message
+                                      validate-against: graphql
+                                      description: >-
+                                        Validate the returned JSON and analyze
+                                        the real cost
+                              - otherwise: []
+                        - switch:
+                            version: 2.0.0
+                            title: switch
+                            case:
+                              - condition: >-
+                                  ($exists(message.attributes.graphql.query.operationType)
+                                  and
+                                  message.attributes.graphql.query.operationType
+                                  != 'subscription')
+                                execute: []
+                              - otherwise: []
+            - otherwise:
+                - parse:
+                    version: 2.0.0
+                    title: parse
+                    parse-settings-reference:
+                      parse-settings:
+                        document_type: graphql
+                        max_nesting_depth: 10
+                    description: Parse the GraphQL query
+                - switch:
+                    version: 2.0.0
+                    title: switch
+                    case:
+                      - condition: >-
+                          ($operationPath() = '/graphql' and
+                          message.attributes.graphql.query.operationType !=
+                          'subscription')
+                        execute:
+                          - graphql-execute:
+                              title: GraphQL execute
+                              version: 2.0.0
+                              targets:
+                                - target: root
+                                  execute:
+                                    - validate:
+                                        input: message
+                                        version: 2.5.0
+                                        validate-against: graphql
+                                        description: >-
+                                          Validate the GraphQL query and analyze
+                                          the expected cost
+                                        title: validate & analyze
+                                    - invoke:
+                                        cache-ttl: 900
+                                        graphql-send-type: detect
+                                        parameter-control:
+                                          type: allowlist
+                                          values: []
+                                        http-version: HTTP/1.1
+                                        header-control:
+                                          type: allowlist
+                                          values:
+                                            - User-Agent
+                                            - X-Client-IP
+                                            - X-Global-Transaction-ID
+                                            - Content-Type
+                                        chunked-uploads: true
+                                        verb: keep
+                                        stop-on-error:
+                                          - ConnectionError
+                                          - SOAPError
+                                          - OperationError
+                                        websocket-upgrade: false
+                                        description: Invoke the backend GraphQL server
+                                        compression: false
+                                        title: graphql-invoke
+                                        target-url: $(target-url)
+                                        backend-type: graphql
+                                        version: 2.2.0
+                                        cache-response: protocol
+                                        timeout: 60
+                                        persistent-connection: true
+                                    - parse:
+                                        title: parse
+                                        version: 2.0.0
+                                        description: >-
+                                          Parse the response from the GraphQL
+                                          backend server
+                                        parse-settings-reference:
+                                          default: apic-default-parsesettings
+                                    - validate:
+                                        input: message
+                                        version: 2.5.0
+                                        validate-against: graphql
+                                        description: >-
+                                          Validate the returned JSON and analyze
+                                          the real cost
+                                        title: validate & analyze
+                                  catch:
+                                    - execute: []
+                                      errors:
+                                        - ConnectionError
+                                - target: __introspection
+                                  execute:
+                                    - validate:
+                                        input: message
+                                        version: 2.5.0
+                                        validate-against: graphql
+                                        description: >-
+                                          Validate the GraphQL query and analyze
+                                          the expected cost
+                                        title: validate & analyze
+                                    - graphql-introspect:
+                                        input: message
+                                        version: 2.0.0
+                                        description: >-
+                                          Introspect the GraphQL schema using the
+                                          query
+                                        title: graphql-introspect
+                      - condition: ($operationPath() = '/graphql/cost')
+                        execute:
+                          - validate:
+                              version: 2.5.0
+                              title: validate & analyze
+                              input: message
+                              validate-against: graphql
+                              description: >-
+                                Validate the GraphQL query and analyze the
+                                expected cost
+                          - set-variable:
+                              version: 2.0.0
+                              title: set-variable
+                              actions:
+                                - set: message.body
+                                  value: $(message.attributes.graphql)
+                                  type: any
+                              description: >-
+                                Copy the cost estimate for the GraphQL query to
+                                the output
+                      - otherwise:
+                          - throw:
+                              version: 2.0.0
+                              title: throw
+                              name: BadRequestError
+                              description: >-
+                                Reject all inputs not handled by other branches
+                                of the switch
+                              message: Bad Request
+                    description: >-
+                      Choose between executing on backend server or other
+                      options to be completed on the Gateway
+    finally: []
+    catch: []
+  html-page: store:///graphiql.html
+  gateway: datapower-api-gateway
+  phase: realized
+  enforced: true
+  testable: true
+  activity-log:
+    enabled: true
+    success-content: activity
+    error-content: payload
+  properties:
+    target-url:
+      value: http://dab5-191-95-169-106.ngrok.io/graphql
+definitions:
+  schema:
+    type: 'null'
+    x-ibm-schema:
+      type: graphql
+      url: https://dab5-191-95-169-106.ngrok.io/graphql
+      filename: abonos.graphql
+      file: >-
+        ZGlyZWN0aXZlIEByZW1vdmUoaWY6IFtTdHJpbmddKSBvbiBTQ0FMQVIgfCBPQkpFQ1QgfCBGSUVMRF9ERUZJTklUSU9OIHwgQVJHVU1FTlRfREVGSU5JVElPTiB8IElOVEVSRkFDRSB8IFVOSU9OIHwgRU5VTSB8IEVOVU1fVkFMVUUgfCBJTlBVVF9PQkpFQ1QgfCBJTlBVVF9GSUVMRF9ERUZJTklUSU9OCmRpcmVjdGl2ZSBAbGlzdFNpemUocmVxdWlyZU9uZVNsaWNpbmdBcmd1bWVudDogQm9vbGVhbiA9IHRydWUsIGFzc3VtZWRTaXplOiBJbnQsIHNsaWNpbmdBcmd1bWVudHM6IFtTdHJpbmchXSwgc2l6ZWRGaWVsZHM6IFtTdHJpbmchXSkgb24gRklFTERfREVGSU5JVElPTgpkaXJlY3RpdmUgQGNvc3Qod2VpZ2h0OiBGbG9hdCEpIG9uIFNDQUxBUiB8IEVOVU0gfCBPQkpFQ1QgfCBGSUVMRF9ERUZJTklUSU9OIHwgSU5QVVRfRklFTERfREVGSU5JVElPTiB8IEFSR1VNRU5UX0RFRklOSVRJT04KZGlyZWN0aXZlIEBzY2FsYXJQYXJhbShuYW1lOiBTdHJpbmchLCB2YWx1ZTogU3RyaW5nISkgcmVwZWF0YWJsZSBvbiBTQ0FMQVIKc2NhbGFyIERhdGVUaW1lCgoiIiIKRWwgTUJTIGVzIHVuIG3zZHVsbyBmaW5hbmNpZXJvIGRlbCBzaXN0ZW1hIFZpc2lvbiBQbHVzIChWKykuCkVzdGUgbfNkdWxvIGZ1ZSBkZXByZWNhZG8geSBzdSBmdW5jafNuIGZ1ZSBjb25zb2xpZGFyIGxhIGluZm9ybWFjafNuIGRlIGxhcyB0cmFuc2FjY2lvbmVzIHRhcmlmaWNhZGFzIHkgbGFzIHJldGVuY2lvbmVzIHBlbmRpZW50ZXMgZGUgY29icm8uCiIiIgp0eXBlIE1icyB7CiAgIiIiCiAgQ/NkaWdvIGRlIE1vZHVsbyBkZSBM82dpY2EgVXRpbGl6YWRvIGVuIE1CUwogIDAyODogRWxpbWluYWNp824gZGUgVHhzCiAgMTIxOiBBbnVsYWNp824gQ3VvdGEgQzNDIG5vIG1vbmV0YXJpYQogIDEyMjogQW51bGFjafNuIEN1b3RhIE1vbmV0YXJpYQogIDEyNzogUmV0ZW5jafNuIFBlbmRpZW50ZQogIDEyOTogUmV0ZW5jafNuIFBhcmVhZGEKICAyMDE6IFZlbnRhIGEgUGFnYXIKICAiIiIKICBtb2R1bG9Mb2dpY2E6IFN0cmluZwogICJD82RpZ28gZGUgVHJhbnNhY2Np824gVXRpbGl6YWRvIGVuIE1CUyIKICB0cmFuc0NvZGU6IFN0cmluZwogICIiIgogIEPzZGlnbyBJZGVudGlmaWNhZG9yIGRlbCBQcm9kdWN0byBVdGlsaXphZG8gZW4gTUJTCiAgUmVwcmVzZW50YSBsYSBpZGVudGlmaWNhY2nzbiBkZSBsb3MgY29tZXJjaW9zIGNvYnJhZG9yZXMgY29tbyB0YW1iaeluIGVsIHRpcG8gZGUgY3VvdGEgY29uIHRvdGFsIGRlIGN1b3Rhcy4KICAKICAwMDA6IFNpbiBMYXN0IE9wZXJhdG9yCiAgMzAyOiBjdW90YXMgQzNDICgyIEN1b3RhcykKICAzMDM6IGN1b3RhcyBDM0MKICA0MDE6IFZlbnRhIE11bmljaXBhbGlkYWRlcyBvIENvYnJhZG9yZXMKICA0MDI6IENvbWlzaW9uZXMgVHJhbnNhY2Npb25hbGVzIGRlIE11bmljaXBhbGlkYWRlcyBvIENvYnJhZG9yZXMKICA1MDE6IEFib25vIE5lZ2F0aXZvIGRlIE11bmljaXBhbGlkYWRlcyB5IGNvYnJhZG9yZXMKICA1MDI6IE1vbnRvIENvbWlzaW9uZXMgUGVuZGllbnRlIE11bmljaXBhbGlkYWRlcyB5IGNvYnJhZG9yZXMKICBFbnRyZSBvdHJvcwogICIiIgogIGxhc3RPcGVyYXRvcjogU3RyaW5nCn0KCnR5cGUgTW9udG8gewogICJNb250byBkZSBsYSBUcmFuc2FjY2nzbiBlbiBNb25lZGEgT3JpZ2VuIgogIHRyYW5zYWNjaW9uOiBGbG9hdAogICJNb250byBkZWwgVnVlbHRvIGRlIGxhIFRyYW5zYWNjafNuIGVuIE1vbmVkYSBPcmlnZW4iCiAgdnVlbHRvOiBGbG9hdAogICJNb250byBkZSBsYSBDb21pc2nzbiBlbiBNb25lZGEgT3JpZ2VuIgogIGNvbWlzaW9uOiBGbG9hdAogICJNb250byBkZWwgSVZBIGRlIGxhIENvbWlzafNuIGVuIE1vbmVkYSBPcmlnZW4iCiAgaXZhQ29taXNpb246IEZsb2F0CiAgIk1vbnRvIE5ldG8gYSBBYm9uYXIiCiAgbmV0b0Fib25hcjogRmxvYXQKICAiTW9udG8gZGUgbGFzIEN1b3RhcyBlbiB1bmEgVHJhbnNhY2Np824gZW4gQ3VvdGFzIGVuIE1vbmVkYSBPcmlnZW4iCiAgY3VvdGE6IEZsb2F0Cn0KCnR5cGUgQ29tZXJjaW8gewogICJD82RpZ28gZGVsIENvbWVyY2lvIGRlbCBDbGllbnRlIGRvbmRlIHNlIFJlYWxpemEgZWwgQWJvbm8iCiAgY2RnQ29tZXJjaW86IFN0cmluZwogICJD82RpZ28gZGVsIFRpcG8gZGUgQ29udHJhdG8gUmVhbGl6YWRvIGVudHJlIFRyYW5zYmFuayB5IGVsIENsaWVudGUiCiAgY2RnVGlwb0NvbnRyYXRvOiBTdHJpbmcKICAiQ3VlbnRhIENvcnJpZW50ZSBkZWwgQ29tZXJjaW8gZG9uZGUgc2UgUmVhbGl6YSBlbCBBYm9ubyIKICBudW1DdGFDdGVDb21lcmNpbzogU3RyaW5nCiAgIkluZGljYWRvciBkZSBDdWVudGEgUHJvcGlhIG8gQ3VlbnRhIGRlIFRlcmNlcm9zIgogIGZsZ0N0YVByb3BpYVRlcmM6IFN0cmluZwogICJD82RpZ28gUGVy7W9kbyBkZSBBY3VtdWxhY2nzbiB5IERlc2Zhc2UgZGUgUGFnbyIKICBjZGdQZXJpb2RvQWN1bURlc2ZQYWdvOiBTdHJpbmcKICAiSW5mb3JtYWNp824gc2kgY29tZXJjaW8gZXMgUFNQIgogIHBzcDogUHNwCn0KCnR5cGUgUHNwIHsKICAiQ/NkaWdvIGRlIHVuIFBTUCIKICBjZGdQc3A6IFN0cmluZwogICIiIgogIElkZW50aWZpY2Fkb3IgcXVlIGxlIEFzaWduYSBsYSBNYXJjYSBhIHVuIFBTUAogIFZhbG9yZXMgMSB5IDAuIDEgcXVpZXJlIGRlY2lyIHF1ZSBlcyBDbGllbnRlIFBTUC4KICAiIiIKICBpZFBzcE1hcmNhOiBTdHJpbmcKfQoKdHlwZSBJdG0gewogICJOb21icmUgZGUgbGEgTvNtaW5hIHBhcmEgVHJhbnNhY2Npb25lcyBkZSBJVE0iCiAgbm9tTm9taW5hOiBTdHJpbmcKICAiRmVjaGEgZGUgRW527W8gZGUgbGEgTvNtaW5hIHBhcmEgVHJhbnNhY2Npb25lcyBkZSBJVE0iCiAgZmNoRW52aW9Ob21pbmE6IFN0cmluZwogICJD82RpZ28gZGUgT3JpZ2VuIGRlIGxhIFJldGVuY2nzbiBkZSBJVE0iCiAgY2RnT3JpZ2VuUmV0ZW5jaW9uOiBTdHJpbmcKICAiQ/NkaWdvIGRlIGxhIE5hdHVyYWxlemEgZGUgbGEgUmV0ZW5jafNuIGRlIElUTSIKICBjZGdOYXR1cmFsZXphUmV0ZW5jaW9uOiBTdHJpbmcKICAiT3JpZ2VuIGRlIGxhIFRyYW5zYWNjafNuIGRlIElUTSIKICBjZGdPcmlnZW5UeDogU3RyaW5nCiAgIkPzZGlnbyBkZWwgVXN1YXJpbyBkZSBJbmdyZXNvIGVuIElUTSIKICBjZGdVc3VhcmlvOiBTdHJpbmcKICAiSWRlbnRpZmljYWRvciBkZWwgU2VydmljaW8gKElUTSBO821pbmFzKSIKICBpZFNlcnZpY2lvOiBTdHJpbmcKICAiRmxhZyBJbmRpY2Fkb3IgZGUgRm9yemFtaWVudG8gZGUgbGEgVHJhbnNhY2Np824gZW4gSVRNIgogIGZsZ0ZvcnphbWllbnRvOiBTdHJpbmcKICAiTvptZXJvINpuaWNvIGRlIGxhIFRyYW5zYWNjafNuIGEgTml2ZWwgZGUgVXN1YXJpbyAoZXggSUQtTUJTKSIKICBjZGdOdW1VbmljbzogU3RyaW5nCn0KCnR5cGUgQWJvbm8gewogICJJZGVudGlmaWNhZG9yIGRlIGxhIFRyYW5zYWNjafNuIChsbmluc2VjKSIKICBpZFRyYW5zYWNjaW9uOiBTdHJpbmcKICAiSWRlbnRpZmljYWRvciBkZSBsYSBUcmFuc2FjY2nzbiBkZSBSZWZlcmVuY2lhIEFzb2NpYWRhIChsbmluc2VjX2FudCkiCiAgaWRUcmFuc2FjY2lvblJlZjogU3RyaW5nCiAgIkZlY2hhIGRlIFByb2Nlc28gZGUgbGEgVHJhbnNhY2Np824iCiAgZmNoUHJvY2VzYW1pZW50bzogRGF0ZVRpbWUKICAiRmVjaGEgZGUgQWJvbm8gYWwgQ29tZXJjaW8iCiAgZmNoQWJvbm86IERhdGVUaW1lCiAgIkZlY2hhIGRlIFNldHRsZW1lbnQgZGUgbGEgVHJhbnNhY2Np824gKEZlY2hhIGVuIGxhIHF1ZSBvY3VycmUgZWwgcHJvY2VzbyBUcmFuc2JhbmsgZGUgQWJvbm8pIgogIGZjaFNldHRsZW1lbnQ6IERhdGVUaW1lCiAgIkZlY2hhIGRlIEZhY3R1cmFjafNuIgogIGZjaEZhY3R1cmFjaW9uOiBEYXRlVGltZQogICJGZWNoYSBkZSBMaXF1aWRhY2nzbiIKICBmY2hMaXF1aWRhY2lvbjogRGF0ZVRpbWUKICAiIiIKICBD82RpZ28gZGUgT3JpZ2VuIGRlbCBSZWdpc3RybwogIERFVEEgLSBEZXRhbGxlIGRlIFRyYW5zYWNjaW9uZXMgYSBBYm9uYXIKICBDT0JSIC0gVHJhbnNhY2Npb25lcyBkZWwgTW9kZWxvIENvYnJhZG9yCiAgQURJQyAtIFRyYW5zYWNjaW9uZXMgQWRpY2lvbmFsZXMgR2VuZXJhZGFzIHBhcmEgbGEgRmFjdHVyYWNp824gKEVqZW1wbG8sIE5vdGFzIGRlIENy6WRpdG8sIE5vdGFzIGRlIETpYml0bywgZXRjLikKICAiIiIKICBjZGdPcmlnZW5SZWdpc3RybzogU3RyaW5nCiAgIklkZW50aWZpY2Fkb3IgZGUgbGEgQ3VvdGEgKE76bWVybyBkZSBsYSBDdW90YSkiCiAgaWRDdW90YTogU3RyaW5nCiAgIkNvcnJlc3BvbmRlIGEgbGFzIERpc3RpbnRhcyBUaXBpZmljYWNpb25lcyBxdWUgc2UgT3RvcmdhIGEgbGFzIFRyYW5zYWNjaW9uZXMiCiAgY2RnVGlwb1R4OiBTdHJpbmcKICAiRm9ybWEgZGUgUGFnbyBkZWwgQWJvbm8iCiAgY2RnRm9ybWFQYWdvQWJvbm86IFN0cmluZwogICJJbmRpY2Fkb3IgZGUgRmFjdHVyYSBvIE5vdGEgZGUgQ3LpZGl0byIKICBmbGdGYWN0dXJhTmM6IFN0cmluZwogICJJbmRpY2Fkb3IgZGUgVHJhbnNhY2Np824gUGVuZGllbnRlIG8gQXBsaWNhZGEiCiAgZmxnUGVuZGllbnRlQXBsaWNhZGE6IFN0cmluZwogICIiIgogIExvcyB2YWxvcmVzIHBvc2libGVzIHNvbjoKICAwMCAtIFJlZ2lzdHJvIEluaWNpYWwKICAwMSAtIFRyYW5zYWNjafNuIEZpbmFuY2llcmEKICAwNCAtIFRyYW5zYWNjafNuIEFkbWluaXN0cmF0aXZhCiAgMjAgLSBUcmFuc2FjY2nzbiBGaW5hbmNpZXJhIEV4Y2VwY2lvbiAoUG9zdGVkKQogIDIxIC0gVHJhbnNhY2Np824gRmluYW5jaWVyYSBFeGNlcGNpb24gKE5vdCBQb3N0ZWQpCiAgMjIgLSBUcmFuc2FjY2nzbiBGaW5hbmNpZXJhIEV4Y2VwY2lvbiAoUGFydGlhbGx5IFBvc3RlZCkKICAyMyAtIFRyYW5zYWNjafNuIEZpbmFuY2llcmEgRXhjZXBjaW9uIChJbnZhbGlkIERhdGEpCiAgIiIiCiAgZmxnVHhGaW5hbmNpZXJhOiBTdHJpbmcKICAiTW9udG9zIGRlIGxhIHRyYW5zYWNjafNuIHkgZGVsIGFib25vIgogIG1vbnRvOiBNb250bwogICJDb21lcmNpbyBkb25kZSBzZSByZWFsaXphcuEgZWwgQWJvbm8iCiAgY29tZXJjaW86IENvbWVyY2lvCn0KCnR5cGUgVHJhbnNhY2Npb24gewogICJDb3JyZXNwb25kZSBhbCBpZGVudGlmaWNhZG9yIGRlIGxhIHRyYW5zYWNjafNuIGR1cGxpY2FkYSBsYSBjdWFsIGVzdGEgYXNvY2lhZGEgYSB1bmEgdHJhbnNhY2Np824geWEgZXhpc3RlbnRlLiIKICBpZFRyeER1cGxpY2FkYTogU3RyaW5nCiAgIiIiCiAgRmxhZyBpZGVudGlmaWNhZG9yIGRlIHVuYSBUcmFuc2FjY2nzbiBlbiBDdW90YXMgbyBTaW4gQ3VvdGFzCiAgMSAtIFRyYW5zYWNjafNuIGNvbiBDdW90YXMKICAwIC0gVHJhbnNhY2Np824gc2luIEN1b3RhcyIKICAiIiIKICBmbGdUeEN1b3RhOiBTdHJpbmcKICAiQ/NkaWdvIGRlIEF1dG9yaXphY2nzbiBkZSBsYSBUcmFuc2FjY2nzbiIKICBjZGdBdXRvcml6YWNpb246IFN0cmluZwogICJD82RpZ28gSVNPIGRlIGxhIE1vbmVkYSBlbiBsYSBDdWFsIHNlIEVmZWN0dfMgbGEgVHJhbnNhY2Np824iCiAgY2RnTW9uZWRhOiBTdHJpbmcKICAiQ/NkaWdvIGRlIElkZW50aWZpY2FjafNuIGRlbCBUaXBvIGRlIENhcmdhIGRlbCBQVExGLiBDYW1wbyBvcGVyYWNpb25hbCIKICBjZGdDYXJnYVB0bGY6IFN0cmluZwogICJD82RpZ28gZGUgRXJyb3IgZGUgbGEgVHJhbnNhY2Np824iCiAgY2RnRXJyb3JUeDogU3RyaW5nCiAgIkPzZGlnbyBkZSBPcmlnZW4gZGVsIEVycm9yIGRlIGxhIFRyYW5zYWNjafNuIgogIGNkZ09yaWdlbkVycm9yVHg6IFN0cmluZwogICJJZGVudGlmaWNhZG9yIGRlbCBEZXN0aW5vIFNpc3TpbWljbyBkZSBsYSBUcmFuc2FjY2nzbiAoRWplbXBsbyBkZW50cm8gZGUgQ01NKSIKICBpZERlc3Rpbm9UeDogU3RyaW5nCiAgIklkZW50aWZpY2Fkb3IgZGVsIFRpcG8gZGUgQ3VvdGEgZGUgdW5hIFRyYW5zYWNjafNuIEFkcXVpcmlkYSBlbiBDdW90YXMiCiAgaWRUaXBvQ3VvdGE6IFN0cmluZwogICJO+m1lcm8gZGUgQ3VvdGFzIGRlIHVuYSBUcmFuc2FjY2nzbiBBZHF1aXJpZGEgZW4gQ3VvdGFzIgogIG51bUN1b3RhczogSW50CiAgIkPzZGlnbyBkZSBsYSBSZXRlbmNp824gQXBsaWNhZGEgYSBsYSBUcmFuc2FjY2nzbiIKICBjZGdSZXRlbmNpb246IFN0cmluZwogICJD82RpZ28gZGVsIFRpcG8gZGUgQ29icm8sIEluZGljYSBlbCBUaXBvIGRlIFJldGVuY2nzbiBvIENvYnJvIHF1ZSBzZSBFc3ThIFJlYWxpemFuZG8iCiAgY2RnVGlwb1JldGVuY2lvbjogU3RyaW5nCiAgIkPzZGlnbyBkZSBPcmRlbiBkZSBDb21wcmEgZW4gVHJhbnNhY2Npb25lcyBkZSBXZWJwYXkgeSBPbmVwYXkgKEZvbGlvIENhbmFsIFdlYlBheSkiCiAgY2RnTnVtUGVkaWRvOiBTdHJpbmcKICAiIiIKICBGZWNoYSBkZXBvc2l0by4KICBFc3RhIGVzIHVuYSBmZWNoYSBxdWUgZW4gZXN0cmljdG8gcmlnb3IgZGViaWVzZSBzZXIgbGEgbWlzbWEgcXVlIGxhIGZlY2hhIGRlIGFib25vLAogIHBlcm8gc2UgbWFudGllbmUgcGFyYSBsb3MgY2Fzb3MgZW4gcXVlIGF1biBtYW50aWVuZW4gbGFzIG3hcXVpbmFzIGNvbiB2b3VjaGVyIGRlIHBhcGVsLAogIGRvbmRlIGxhIGZlY2hhIGRlIGxhIHZlbnRhIGVzIGRpc3RpbnRhIGEgbGEgZmVjaGEgZW4gcXVlIHNlIGluZ3Jlc2EgZW4gdm91Y2hlciwKICBwb3IgZWplbXBsbyBsYXMgY29tcHJhcyBlbiBkdXR0eSBmcmVlIGVuIGVsIGF2afNuLgogICIiIgogIGZjaERlcG9zaXRvOiBEYXRlVGltZQogICJGbGFnIGRlIENoZWNrIEluIC0gQ2hlY2sgT3V0IChIb3RlbCB5IFJlbnQtQS1DYXIpIgogIGZsZ0NoZWNrSW5PdXQ6IERhdGVUaW1lCiAgIkPzZGlnbyBWQ0kgKFdlYlBheSBHYXJhbnRpemFkbykiCiAgY2RnVmNpOiBTdHJpbmcKICAiQ/NkaWdvIFVDQUYgKEluZGljYWRvciBkZSBGb2xpbyBDYW5hbCBXZWJwYXkpIgogIGNkZ1VjYWY6IFN0cmluZwogICJD82RpZ28gZGVsIFByb2Nlc2Fkb3IgZGUgbGEgVHJhbnNhY2Np824iCiAgY2RnUHJvY2VzYWRvcjogU3RyaW5nCiAgIiIiCiAgTvptZXJvIGRlIFJlZmVyZW5jaWEgZGUgbGEgVHJhbnNhY2Np824KICBFc3RlIGPzZGlnbyBjb3JyZXNwb25kZSBhIHVuIG76bWVybyBhdXRvbeF0aWNvIGFzaWduYWRvIGEgbGEgdHJhbnNhY2Np824uIEVzIHVuIGPzZGlnbyBt4XMgcGFyYSBpZGVudGlmaWNhciBsYSB0cmFuc2FjY2nzbiwgYXVucXVlIGVsIHF1ZSBzZSB1c2EgZXMgTG5pbl9zZWMKICAiIiIKICBudW1SZWZlcmVuY2lhOiBTdHJpbmcKICAiIiIKICBD82RpZ28gSWRlbnRpZmljYWRvciBkZWwgTW9kbyBkZSBFbnRyYWRhIGRlIGxhIFRyYW5zYWNjafNuIGVuIGVsIFRlcm1pbmFsCiAgMTAsMTEsMTIgLSBEaWdpdGFkbwogIDIwLCAyMSwgMjIsIDkwMCwgOTAxLCA5MDIgLSBCYW5kYSBNYWdu6XRpY2EgKDl4eCBlbiBlbCBleHRyYW5qZXJvKQogIDUxIC0gQ2hpcCBjb24gQ29udGFjdG8KICA3MSAtIENoaXAgQ29udGFjdGxlc3MKICA4MDAgLSBGYWxsYmFjayAoQ2hpcCBNYWxvIGEgQmFuZGEpCiAgODEwIC0gSW50ZXJuZXQKICAiIiIKICBjZGdFbnRyYWRhVHhUZXJtaW5hbDogU3RyaW5nCiAgIk1lcyBQZXLtb2RvIGRlIGxhIFRyYW5zYWNjafNuIgogIG51bVBlcmlvZG9HZXN0aW9uOiBTdHJpbmcKICAiRW1pc29yIGRlIGxhIHRhcmpldGEgZGUgbGEgdHJhbnNhY2Np824iCiAgZW1pc29yOiBFbWlzb3IKICAiVGFyamV0YSBjb24gbGEgcXVlIHNlIHJlYWxpevMgbGEgdHJhbnNhY2Np824iCiAgdGFyamV0YTogVGFyamV0YQogICJTaSBsYSB0cmFuc2FjY2lvbiBmdWUgaW5ncmVzYWRhIHBvciBJVE0iCiAgaXRtOiBJdG0KICAiSW5mb3JtYWNp824gc2kgbGEgdHJhbnNhY2Npb24gcG9zZWUgc3VyY2hhcmdlIgogIHN1cmNoYXJnZTogU3VyY2hhcmdlCiAgIm1icyIKICBtc2I6IE1icwp9Cgp0eXBlIEVtaXNvciB7CiAgIiIiCiAgQ/NkaWdvIEZJSUQgZGVsIEVtaXNvcgogIEVzdGUgY/NkaWdvIGVzIHVuIGlkZW50aWZpY2Fkb3IgZWwgRW1pc29yIHF1ZSBzZSBnZW5lcmEgZGUgbWFuZXJhIGludGVybmEgZW4gVEJLLCBhY3R1YWxtZW50ZSBjb24gZWwgc2UgcHVlZGUgaWRlbnRpZmljYXIgc2kgZXMgVklTQSBEZWJpdG8sIE1hc3RlcmNhcmQsIE1hZXN0cm8uIEV0Yy4KICAiIiIKICBjZGdGaWlkOiBTdHJpbmcKICAiSWRlbnRpZmljYWRvciBkZWwgQ2xpZW50ZSBFbWlzb3IiCiAgaWRFbWlzb3I6IFN0cmluZwogICJD82RpZ28gZGVsIENsaWVudGUgRW1pc29yIFNlZ/puIGxhIENNRiIKICBjZGdFbWlzb3JDbWY6IFN0cmluZwp9Cgp0eXBlIFRhcmpldGEgewogICJO+m1lcm8gZGUgbGEgVGFyamV0YSAoUEFOKSBxdWUgUmVhbGl6YSBsYSBUcmFuc2FjY2nzbiIKICBudW1UYXJqZXRhOiBTdHJpbmcKICAiUHJpbWVyb3MgOCBE7WdpdG9zIGRlIGxhIFRhcmpldGEiCiAgY2RnTWFyY2FUYXJqZXRhOiBTdHJpbmcKICAiQ/NkaWdvIGRlIGxhIE1hcmNhIGRlIGxhIFRhcmpldGEgcXVlIFJlYWxpemEgbGEgVHJhbnNhY2Np824iCiAgY2RnTWVkaW9QYWdvOiBTdHJpbmcKICAiQ/NkaWdvIGRlbCBNZWRpbyBkZSBQYWdvIFV0aWxpemFkbyAoQyAtIENy6WRpdG8sIEQgLSBE6WJpdG8sIFAgLSBQcmVwYWdvKSIKICBjZGdNb2RlbG9PcGVyYWNpb246IFN0cmluZwogICJGbGFnIElkZW50aWZpY2Fkb3IgZGUgUHJvY2VkZW5jaWEgZGUgbGEgVGFyamV0YSAoTiAtIE5hY2lvbmFsLCBJIC0gSW50ZXJuYWNpb25hbCkiCiAgZmxnUHJvY2VkZW5jaWFUYXJqZXRhOiBTdHJpbmcKfQoKdHlwZSBTdXJjaGFyZ2UgewogICJJZGVudGlmaWNhZG9yIGRlIHVuYSBUcmFuc2FjY2nzbiBjb24gU3VyY2hhcmdlIgogIGZsZ1N1cmNoYXJnZTogU3RyaW5nCiAgIk1vbnRvIFN1cmNoYXJnZSBlbiBNb25lZGEgT3JpZ2VuIGNvbiBJVkEgSW5jbHVpZG8iCiAgbXRvU3VyY2hhcmdlOiBGbG9hdAogICJNb250byBkZSBsYSBUcmFuc2FjY2nzbiBzaW4gU3VyY2hhcmdlIgogIG10b1R4U2luU3VyY2hhcmdlOiBGbG9hdAogICJNb250byBTdXJjaGFyZ2UgZW4gTW9uZWRhIE9yaWdlbiBzaW4gSVZBIEluY2x1aWRvIgogIG10b05ldG9TdXJjaGFyZ2U6IEZsb2F0CiAgIk1vbnRvIGRlbCBJVkEgQ29ycmVzcG9uZGllbnRlIGFsIE1vbnRvIFN1cmNoYXJnZSBlbiBNb25lZGEgT3JpZ2VuIgogIG10b0l2YVN1cmNoYXJnZTogRmxvYXQKfQoKdHlwZSBRdWVyeSB7CiAgIk9idGllbmUgbG9zIGFib25vcyBwb3IgcmFuZ28gZGUgZmVjaGEiCiAgYWJvbm9Qb3JGZWNoYShjZGdDb21lcmNpbzogW1N0cmluZ10sIGZlY2hhRGVzZGU6IERhdGVUaW1lLCBmZWNoYUhhc3RhOiBEYXRlVGltZSk6IFtBYm9ub10KfQoKc2NoZW1hIHsKICBxdWVyeTogUXVlcnkKfQoK
+paths:
+  /graphql:
+    post:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes:
+        - application/json
+        - application/graphql
+      produces:
+        - application/json
+      parameters:
+        - name: variables
+          in: query
+          required: false
+          type: string
+        - name: operationName
+          in: query
+          required: false
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: string
+    get:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces:
+        - application/json
+        - text/html
+      parameters:
+        - name: variables
+          in: query
+          required: false
+          type: string
+        - name: operationName
+          in: query
+          required: false
+          type: string
+        - name: query
+          in: query
+          required: false
+          type: string
+    parameters: []
+  /graphql/cost:
+    post:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes:
+        - application/json
+        - application/graphql
+      produces:
+        - application/json
+      parameters:
+        - name: variables
+          in: query
+          required: false
+          type: string
+        - name: operationName
+          in: query
+          required: false
+          type: string
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: string
+    get:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces:
+        - application/json
+        - text/html
+      parameters:
+        - name: variables
+          in: query
+          required: false
+          type: string
+        - name: operationName
+          in: query
+          required: false
+          type: string
+        - name: query
+          in: query
+          required: true
+          type: string
+    parameters: []

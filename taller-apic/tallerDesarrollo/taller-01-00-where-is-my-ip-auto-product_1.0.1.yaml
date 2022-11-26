@@ -1,0 +1,29 @@
+info:
+  title: Taller-01-00_where-is-my-ip auto product
+  name: taller-01-00-where-is-my-ip-auto-product
+  version: 1.0.1
+apis:
+  Taller-01-00_where-is-my-ip:
+    $ref: ./taller-01-00-where-is-my-ip_1.0.1.yaml
+gateways:
+  - datapower-api-gateway
+plans:
+  default:
+    title: Default Plan
+    description: Default Plan
+    approval: false
+    rate-limit:
+      value: unlimited
+    apis: {}
+visibility:
+  view:
+    enabled: true
+    type: public
+    tags: []
+    orgs: []
+  subscribe:
+    enabled: true
+    type: authenticated
+    tags: []
+    orgs: []
+product: 1.0.0

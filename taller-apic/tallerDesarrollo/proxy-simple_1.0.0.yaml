@@ -1,0 +1,143 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Proxy Simple
+  x-ibm-name: proxy-simple
+  description: >-
+    ## Objetivo
+
+
+    Este es un proxy hacia un **endpoint** que entrega información de
+    localización por IP
+
+
+
+    http://ip-api.com/json/186.155.203.142 
+
+
+    para poder obtener localizacion de IP.
+
+
+    | req | respuesta|
+
+    |---|--|
+
+
+
+
+    ```json
+
+    {"status":"success","country":"Colombia","countryCode":"CO","region":"DC","regionName":"Bogota
+    D.C.","city":"Bogotá","zip":"111311","lat":4.6496,"lon":-74.0632,"timezone":"America/Bogota","isp":"ETB
+    - Colombia","org":"ETB - Colombia","as":"AS19429 ETB -
+    Colombia","query":"186.155.203.142"}
+
+    ```
+
+
+    1. First item
+
+    1. Second item
+
+    1. Third item
+
+    1. Fourth item
+basePath: /proxy-simple
+x-ibm-configuration:
+  properties:
+    target-url:
+      value: http://ip-api.com/json/{ip}
+      description: URL of the proxy policy
+      encoded: false
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  assembly:
+    execute:
+      - invoke:
+          title: invoke
+          version: 2.0.0
+          verb: keep
+          target-url: $(target-url)
+  application-authentication:
+    certificate: false
+  cors:
+    enabled: true
+paths:
+  /obtener-localizacion/{ip}:
+    get:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      description: Este es el GET
+      parameters:
+        - name: ip
+          in: path
+          type: string
+          required: true
+          description: Es la IP que se quiere **consultar**
+    put:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+    post:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+    delete:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+    head:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+    patch:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+    options:
+      responses:
+        '200':
+          description: success
+          schema:
+            type: string
+      consumes: []
+      produces: []
+securityDefinitions:
+  clientID:
+    type: apiKey
+    in: header
+    name: X-IBM-Client-Id
+security:
+  - clientID: []
+schemes:
+  - https

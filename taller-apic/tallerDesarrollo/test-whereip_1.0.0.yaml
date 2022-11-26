@@ -1,0 +1,31 @@
+info:
+  title: Test-whereIp
+  name: test-whereip
+  version: 1.0.0
+apis:
+  taller-01-00-where-is-my-ip1.0.0:
+    $ref: ./taller-01-00-where-is-my-ip.yaml
+  taller-01-00-where-is-my-ip1.0.1:
+    $ref: ./taller-01-00-where-is-my-ip_1.0.1.yaml
+gateways:
+  - datapower-api-gateway
+plans:
+  default-plan:
+    title: Default Plan
+    description: Default Plan
+    approval: false
+    rate-limits:
+      default:
+        value: 100/1hour
+visibility:
+  view:
+    enabled: true
+    type: public
+    tags: []
+    orgs: []
+  subscribe:
+    enabled: true
+    type: authenticated
+    tags: []
+    orgs: []
+product: 1.0.0

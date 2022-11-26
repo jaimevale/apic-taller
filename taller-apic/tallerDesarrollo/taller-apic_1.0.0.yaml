@@ -1,0 +1,33 @@
+info:
+  version: 1.0.0
+  title: Taller-APIC
+  name: taller-apic
+  description: varios API en un producto de pruebas
+gateways:
+  - datapower-api-gateway
+plans:
+  default-plan:
+    title: Default Plan
+    description: un plan con limite de 100 invocaciones a la hora
+    rate-limits:
+      default:
+        value: 100/1hour
+apis:
+  taller-01-00-where-is-my-ip1.0.0:
+    $ref: ./taller-01-00-where-is-my-ip.yaml
+  taller-03-00-info-publica2.0.0:
+    $ref: ./taller-03-00-info-publica.yaml
+  taller-01-00-where-is-my-ip1.0.1:
+    $ref: ./taller-01-00-where-is-my-ip_1.0.1.yaml
+visibility:
+  view:
+    type: public
+    orgs: []
+    tags: []
+    enabled: true
+  subscribe:
+    type: authenticated
+    orgs: []
+    tags: []
+    enabled: true
+product: 1.0.0

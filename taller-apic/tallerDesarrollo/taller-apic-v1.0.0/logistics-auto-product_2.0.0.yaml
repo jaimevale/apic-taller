@@ -1,0 +1,29 @@
+info:
+  title: logistics auto product
+  name: logistics-auto-product
+  version: 2.0.0
+apis:
+  logistics:
+    $ref: ./logistics.yaml
+gateways:
+  - datapower-api-gateway
+plans:
+  default:
+    title: Default Plan
+    description: Default Plan
+    approval: false
+    rate-limit:
+      value: unlimited
+    apis: {}
+visibility:
+  view:
+    enabled: true
+    type: public
+    tags: []
+    orgs: []
+  subscribe:
+    enabled: true
+    type: authenticated
+    tags: []
+    orgs: []
+product: 1.0.0

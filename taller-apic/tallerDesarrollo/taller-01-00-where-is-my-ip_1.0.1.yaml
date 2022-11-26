@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Taller-01-00_where-is-my-ip
   x-ibm-name: taller-01-00-where-is-my-ip
-  version: 1.0.0
+  version: 1.0.1
   description: >-
     Esta es la documentación principal del API
 
@@ -19,12 +19,26 @@ info:
     * Sin  muchas funcionalidades, pero lo suficiente para lograr el objetivo
 
 
-    | Información | dentro de tabla |
+    Se estan realizando las siguientes pruebas:
+
+    - [x] Editar en API designer
+
+    - [x] Ejecutar desde API Designer
+
+    - [x] Publicar a catálogo desde API Designer
+
+    - [ ] Revisar en API Manager, Debería estar en draft
+
+    - [x] Revisar en API Manager, Debería estar en Catálogo
+     
+
+    | Prueba | Resultado |
 
     | --- | ----------- |
 
-    | valor 1 | texto |
+    | Se publica y prueba en API designer | Bien la ejecución |
 
+    |  | Buena la nueva herramienta de traza para mostrar contexto |
 
     La respuesta esperada de este api es:
 
@@ -117,6 +131,22 @@ x-ibm-configuration:
               - ^X-IBM-Client-Id$
           inject-proxy-headers: true
           persistent-connection: true
+      - gatewayscript:
+          version: 2.0.0
+          title: console
+          source: |-
+            console.emerg("emergency");
+            console.alert("alert");
+            console.critical("critical");
+            console.error("error");
+            console.warn("warn");
+            console.notice("notice");
+            // The following methods log at "info" level
+            console.info("info");
+            console.log("log");
+            // The following methods log at "debug" level
+            console.debug("debug");
+            console.trace("trace");
     catch: []
   activity-log:
     enabled: true
