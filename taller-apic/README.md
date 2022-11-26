@@ -1,10 +1,10 @@
 # Talleres de Entrenamiento VCSOFT
 
 ## Producto API Connect 2018.x
-API Connect v 2018.4.1.x (APIC) es la plataforma de gobierno y gestió de API de IBM. Ha sido un producto lider en el mercado y VCSOFT ha apoyado a diferentes clentes en la adopción de esta plataforma desde sus versiones tempranas (v4) hasta su actual infraestructura. El presente repositorio recoge el material necesario para los dos cursos que ofrece VCSOFT para el entrenamiento en APIC.
+API Connect (APIC) es la plataforma de gobierno y gestión de API de IBM. Ha sido un producto lider en el mercado y VCSOFT ha apoyado a diferentes clentes en la adopción de esta plataforma desde sus versiones tempranas (v4) hasta su actual infraestructura. El presente repositorio recoge el material necesario para los dos cursos que ofrece VCSOFT para el entrenamiento en APIC.
 
 ### Taller Conceptos APIC y Administración de la plataforma
-Se plantea un taller de administración de APIC con la si
+Se plantea un taller de administración de APIC con la siguiente definición
 
 |1	|Nombre:	|Conceptos, Administración y Operación APIC|
 |---|-----    |-------|
