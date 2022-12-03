@@ -20,19 +20,8 @@ produces:
 consumes:
   - application/json
 security:
-  - OAuth-GrantAPP:
-      - 'comercios-infoPublica:read:app'
-      - 'usuarios-infoPublica:read:app'
+  - {}
 securityDefinitions:
-  OAuth-GrantAPP:
-    type: oauth2
-    description: OAuth-GrantAPP
-    flow: application
-    x-ibm-oauth-provider: taller05-oauth
-    tokenUrl: 'https://$(catalog.url)/taller05-grupo00/oauth2/token'
-    scopes:
-      'comercios-infoPublica:read:app': Permiso a información publica de comercios. Lectura. Desde app
-      'usuarios-infoPublica:read:app': Permiso a información publica de usuarios. Lectura. Desde app
   apikey:
     type: apiKey
     name: x-client-id
@@ -50,32 +39,51 @@ x-ibm-configuration:
           version: 2.0.0
           title: asignaApikeyProvedor
           source: >-
-            const apim = require('apim');
 
-            console.error("****************** EN taller03 
+            console.info("****************** INICIO taller03 
             *************************");
+
+            const prm = Object.keys(context.get('request.parameters')) ;
+
+            console.info("Formas de referenciar: context.get() "+prm);
+
+            trv('request.parameters.'+prm,context.get('request.parameters.'+prm));
+
 
             //const apikeyProvider = "Bearer 7gfNF2FJPtoVC3rFP2pWX1nrLWzgY0Zx";
 
-            const apikeyProvider = "Bearer
-            "+apim.getvariable('api.properties.api-key-fullcontact');
 
+            const apikeyProvider = "Bearer
+            "+context.get('api.properties.api-key-fullcontact');
+
+            console.info(`Valor de api.properties.api-key-fullcontact:
+            %s`,context.get('api.properties.api-key-fullcontact'));
 
             context.message.header.set('Authorization', apikeyProvider);
 
             context.message.header.set('Content-Type', 'application/json');
 
-            console.error(`El valor de api.operation.path  es
-            ${apim.getvariable('api.operation.path')} `);
+            console.info(`El valor de api.operation.path  es
+            ${context.get('api.operation.path')} `);
 
-            console.error(`El valor de target-url-company  es
-            ${apim.getvariable('api.properties.target-url-company')} `);
+            console.info(`El valor de target-url-company  es
+            ${context.get('api.properties.target-url-company')} `);
 
-            console.error(`El valor de target-url-user  es
-            ${apim.getvariable('api.properties.target-url-user')} `);
+            console.info(`El valor de target-url-user  es
+            ${context.get('api.properties.target-url-user')} `);
 
-            console.error(`El valor de Authorization  es
+            console.info(`El valor de Authorization  es
             ${context.message.header.get('Authorization')} `);
+
+
+            function trv(txt,obj){
+                console.info("______"+txt);
+                Object.keys(obj).forEach(function (key) {
+                   var val = obj[key];
+                   console.info("______"+txt+">.  "+key+": "+val);
+                });
+                console.info("======"+txt);
+            }
       - switch:
           version: 2.0.0
           title: switch
@@ -115,14 +123,15 @@ x-ibm-configuration:
                     verb: POST
                     target-url: $(target-url-company)
                     header-control:
-                      type: blacklist
+                      type: blocklist
                       values:
                         - ^x-client-id$
                     parameter-control:
-                      type: whitelist
+                      type: allowlist
                       values: []
                     cache-response: protocol
                     output: companyData
+                    persistent-connection: true
                 - gatewayscript:
                     version: 2.0.0
                     title: validateRsProvider
@@ -145,33 +154,30 @@ x-ibm-configuration:
                        * 
                        ****************************
                        *****/
-                      console.error("Inicio de validateResponse version
-                      Comercio.1.8.34");
+                      console.error("Inicio de validateResponse version Comercio
+                      ======================");
 
-
-                      const apim = require('apim');
 
 
                       const defaultErrorMsg = "Service unavailable";
 
 
-                      const messageBody = apim.getvariable('companyData.body');
+                      const messageBody = context.get('companyData.body');
 
-                      const statusCode =
-                      apim.getvariable('companyData.status.code');
+                      const statusCode = context.get('companyData.status.code');
 
                       console.error("  companyData.body", messageBody);
 
                       console.error("=========================================");
 
                       console.error("  companyData.status",
-                      apim.getvariable('companyData.status'));
+                      context.get('companyData.status'));
 
                       console.error("  companyData.status.code",
-                      apim.getvariable('companyData.status.code'));
+                      context.get('companyData.status.code'));
 
                       console.error("  companyData",
-                      apim.getvariable('companyData'));
+                      context.get('companyData'));
 
                       console.error("=========================================");
 
@@ -201,9 +207,9 @@ x-ibm-configuration:
 
 
                       function throwError(){
-                         apim.setvariable("ctx.errorData", errors);
+                         context.set("ctx.errorData", errors);
                          const minStatus = errors.reduce((min, err) => err.code < min ? err.code : min, errors[0].code);
-                         apim.error("ResponseException",minStatus,defaultErrorMsg,defaultErrorMsg);
+                         context.reject("ResponseException",minStatus,defaultErrorMsg,defaultErrorMsg);
                       }
 
 
@@ -567,20 +573,17 @@ x-ibm-configuration:
                        * 
                        ****************************
                        *****/
-                      console.error("Inicio de validateResponse version
-                      Usuario.1.8.54");
+                      console.error("Inicio de validateResponse version Usuario
+                      ______________________");
 
-
-                      const apim = require('apim');
 
 
                       const defaultErrorMsg = "Service unavailable";
 
 
-                      const messageBody = apim.getvariable('message.body');
+                      const messageBody = context.get('message.body');
 
-                      const statusCode =
-                      apim.getvariable('message.status.code');
+                      const statusCode = context.get('message.status.code');
 
 
 
@@ -619,9 +622,9 @@ x-ibm-configuration:
 
 
                       function throwError(){
-                         apim.setvariable("ctx.errorData", errors);
+                         context.set("ctx.errorData", errors);
                          const minStatus = errors.reduce((min, err) => err.code < min ? err.code : min, errors[0].code);
-                         apim.error("ResponseException",minStatus,defaultErrorMsg,defaultErrorMsg);
+                         context.reject("ResponseException",minStatus,defaultErrorMsg,defaultErrorMsg);
                       }
 
 
@@ -860,14 +863,15 @@ x-ibm-configuration:
               title: generarError
               source: |-
                 const errors = { "code": 400,
-                                "title": "Datos incompletos",
-                                "detail": "Tempus fugit"
+                                "title": "Datos incompletos "+context.get("error.name"),
+                                "detail": context.get("error.message")
                               }
 
                 session.output.write({"errors": errors});
+    finally: []
   properties:
     target-url-company:
-      value: 'https://api.fullcontact.com/v3/company.enrich'
+      value: https://api.fullcontact.com/v3/company.enrich
       description: >-
         The URL of the target service
 
@@ -882,7 +886,7 @@ x-ibm-configuration:
     api-key-fullcontact:
       value: 7gfNF2FJPtoVC3rFP2pWX1nrLWzgY0Zx
     target-url-user:
-      value: 'https://api.fullcontact.com/v3/person.enrich'
+      value: https://api.fullcontact.com/v3/person.enrich
       description: >-
         Servicio datos publicos persona por mail
 
@@ -899,8 +903,8 @@ x-ibm-configuration:
     sandbox:
       properties:
         api-key-fullcontact: 7gfNF2FJPtoVC3rFP2pWX1nrLWzgY0Zx
-        target-url-user: 'https://api.fullcontact.com/v3/person.enrich'
-        target-url-company: 'https://api.fullcontact.com/v3/company.enrich'
+        target-url-user: https://api.fullcontact.com/v3/person.enrich
+        target-url-company: https://api.fullcontact.com/v3/company.enrich
     publico:
       properties:
         api-key-fullcontact: 3QEci3wkZy84gFMIf0EB6ifmbDkMkI73
@@ -993,7 +997,7 @@ definitions:
       meta:
         _msgId: some text
         _version: some text
-        _rqDateTime: '2018-02-10T09:30Z'
+        _rqDateTime: 2018-02-10T09:30Z
         _transactionId: some text
         _rsLength: 0
         _clientId: some text
@@ -1027,7 +1031,7 @@ definitions:
     example:
       _msgId: e8410f95-5097-4604-8dc3-6bd4a97ba5a3
       _version: 1.0.2
-      _rqDateTime: '2018-02-10T09:30'
+      _rqDateTime: 2018-02-10T09:30
       _transactionId: '77333456789099'
       _rsLength: 1
       _clientId: 899812212-1
@@ -1046,7 +1050,7 @@ definitions:
           value.
         type: string
       code:
-        description: 'An application-specific error code, expressed as a string value.'
+        description: An application-specific error code, expressed as a string value.
         type: string
       title:
         description: >-
@@ -1099,7 +1103,7 @@ definitions:
       meta:
         _msgId: some text
         _version: some text
-        _rqDateTime: '2018-02-10T09:30Z'
+        _rqDateTime: 2018-02-10T09:30Z
         _transactionId: some text
         _rsLength: 45
         _clientId: some text
@@ -1133,7 +1137,7 @@ definitions:
       meta:
         _msgId: some text
         _version: some text
-        _rqDateTime: '2018-02-10T09:30Z'
+        _rqDateTime: 2018-02-10T09:30Z
         _transactionId: some text
         _rsLength: 23
         _clientId: some text
@@ -1212,7 +1216,7 @@ paths:
               meta:
                 _msgId: some text
                 _version: some text
-                _rqDateTime: '2018-02-10T09:30Z'
+                _rqDateTime: 2018-02-10T09:30Z
                 _transactionId: some text
                 _rsLength: 95
                 _clientId: some text
@@ -1234,7 +1238,7 @@ paths:
               meta:
                 _msgId: some text
                 _version: some text
-                _rqDateTime: '2018-02-10T09:30Z'
+                _rqDateTime: 2018-02-10T09:30Z
                 _transactionId: some text
                 _rsLength: 2
                 _clientId: some text
