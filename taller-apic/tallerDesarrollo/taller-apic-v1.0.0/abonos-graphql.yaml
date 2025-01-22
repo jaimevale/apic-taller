@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Abonos GraphQL
   x-ibm-name: abonos-graphql
-  version: 1.0.0
+  version: 1.0.1
 schemes:
   - https
   - wss
@@ -372,6 +372,7 @@ x-ibm-configuration:
   properties:
     target-url:
       value: http://dab5-191-95-169-106.ngrok.io/graphql
+  application-authentication: {}
 definitions:
   schema:
     type: 'null'
@@ -482,3 +483,8 @@ paths:
           required: true
           type: string
     parameters: []
+securityDefinitions:
+  clientIdHeader:
+    type: apiKey
+    in: header
+    name: X-IBM-Client-Id
